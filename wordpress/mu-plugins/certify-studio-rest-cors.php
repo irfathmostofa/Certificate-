@@ -16,6 +16,7 @@ function certify_studio_cors_origins() {
 	$origins = array(
 		'http://localhost:5173',
 		'http://127.0.0.1:5173',
+		'https://certificate-mkr.vercel.app',
 		'#^https://[a-z0-9.-]+\.monkeycode-ai\.live$#i',
 	);
 
