@@ -1,0 +1,205 @@
+export const FONTS = {
+  playfair: '"Playfair Display", Georgia, serif',
+  cinzel: '"Cinzel", "Times New Roman", serif',
+  cormorant: '"Cormorant Garamond", Georgia, serif',
+  greatvibes: '"Great Vibes", cursive',
+  inter: '"Inter", system-ui, sans-serif',
+  opensans: '"Open Sans", system-ui, sans-serif'
+}
+
+export const FONT_OPTIONS = [
+  { key: 'playfair', label: 'Playfair Display' },
+  { key: 'cinzel', label: 'Cinzel' },
+  { key: 'cormorant', label: 'Cormorant Garamond' },
+  { key: 'greatvibes', label: 'Great Vibes (script)' },
+  { key: 'inter', label: 'Inter' },
+  { key: 'opensans', label: 'Open Sans' }
+]
+
+export const BORDER_OPTIONS = ['ornate', 'double', 'minimal', 'geo', 'ribbon']
+export const WATERMARK_OPTIONS = ['seal', 'monogram', 'text', 'none']
+
+export const LAYOUT_OPTIONS = [
+  { key: 'center', label: 'Centered / Formal' },
+  { key: 'split', label: 'Split Accent' },
+  { key: 'band', label: 'Top Band' }
+]
+
+export function blankDesign(overrides = {}) {
+  return {
+    layout: 'center',
+    border: 'ornate',
+    watermark: 'seal',
+    watermarkText: 'CERTIFIED',
+    watermarkOpacity: 0.08,
+    strip: true,
+    stripPosition: 'top',
+    colors: {
+      primary: '#8a6d1f',
+      secondary: '#3a2e12',
+      accent: '#c9a227',
+      background: '#fffdf6',
+      text: '#2b2313'
+    },
+    fonts: {
+      heading: 'cinzel',
+      name: 'greatvibes',
+      body: 'cormorant'
+    },
+    showSeal: true,
+    ...overrides
+  }
+}
+
+export const TEMPLATE_PRESETS = [
+  {
+    id: 'royal-gold',
+    name: 'Royal Gold',
+    category: 'Formal',
+    description: 'Ornate gold double frame with embossed seal and script name.',
+    design: blankDesign({
+      layout: 'center',
+      border: 'ornate',
+      watermark: 'seal',
+      strip: true,
+      stripPosition: 'top',
+      colors: {
+        primary: '#9a7b1f',
+        secondary: '#5a4713',
+        accent: '#d4af37',
+        background: '#fffdf7',
+        text: '#2b2313'
+      },
+      fonts: { heading: 'cinzel', name: 'greatvibes', body: 'cormorant' }
+    })
+  },
+  {
+    id: 'midnight-navy',
+    name: 'Midnight Navy',
+    category: 'Formal',
+    description: 'Deep navy double border with gold accents and monogram watermark.',
+    design: blankDesign({
+      layout: 'center',
+      border: 'double',
+      watermark: 'monogram',
+      strip: false,
+      colors: {
+        primary: '#12285a',
+        secondary: '#0b1a3d',
+        accent: '#c9a227',
+        background: '#fbfcff',
+        text: '#16213e'
+      },
+      fonts: { heading: 'playfair', name: 'cormorant', body: 'opensans' }
+    })
+  },
+  {
+    id: 'modern-graphite',
+    name: 'Modern Graphite',
+    category: 'Modern',
+    description: 'Clean angular frame with a bold accent strip and sans typography.',
+    design: blankDesign({
+      layout: 'band',
+      border: 'geo',
+      watermark: 'text',
+      watermarkText: 'EXCELLENCE',
+      watermarkOpacity: 0.05,
+      strip: true,
+      stripPosition: 'bottom',
+      colors: {
+        primary: '#111827',
+        secondary: '#374151',
+        accent: '#2563eb',
+        background: '#ffffff',
+        text: '#111827'
+      },
+      fonts: { heading: 'inter', name: 'inter', body: 'inter' }
+    })
+  },
+  {
+    id: 'emerald-classic',
+    name: 'Emerald Classic',
+    category: 'Academic',
+    description: 'Academic green frame with wax-style seal and gold detailing.',
+    design: blankDesign({
+      layout: 'center',
+      border: 'double',
+      watermark: 'seal',
+      strip: true,
+      stripPosition: 'top',
+      colors: {
+        primary: '#0f5132',
+        secondary: '#08331f',
+        accent: '#d4af37',
+        background: '#fbfdf9',
+        text: '#123524'
+      },
+      fonts: { heading: 'cinzel', name: 'cormorant', body: 'cormorant' }
+    })
+  },
+  {
+    id: 'crimson-heritage',
+    name: 'Crimson Heritage',
+    category: 'Formal',
+    description: 'Regal burgundy ribbon bands with a classic serif composition.',
+    design: blankDesign({
+      layout: 'center',
+      border: 'ribbon',
+      watermark: 'seal',
+      strip: false,
+      colors: {
+        primary: '#7a1f2b',
+        secondary: '#4d1219',
+        accent: '#d4af37',
+        background: '#fffaf7',
+        text: '#3a1216'
+      },
+      fonts: { heading: 'playfair', name: 'greatvibes', body: 'cormorant' }
+    })
+  },
+  {
+    id: 'slate-tech',
+    name: 'Slate Tech',
+    category: 'Corporate',
+    description: 'Contemporary geometric layout for courses, bootcamps and seminars.',
+    design: blankDesign({
+      layout: 'split',
+      border: 'geo',
+      watermark: 'monogram',
+      strip: true,
+      stripPosition: 'top',
+      colors: {
+        primary: '#0f172a',
+        secondary: '#1e293b',
+        accent: '#06b6d4',
+        background: '#ffffff',
+        text: '#0f172a'
+      },
+      fonts: { heading: 'inter', name: 'inter', body: 'opensans' }
+    })
+  },
+  {
+    id: 'vintage-sepia',
+    name: 'Vintage Sepia',
+    category: 'Academic',
+    description: 'Antique paper tones with ornamental corners and sepia text.',
+    design: blankDesign({
+      layout: 'center',
+      border: 'ornate',
+      watermark: 'text',
+      watermarkText: 'MERIT',
+      watermarkOpacity: 0.06,
+      strip: false,
+      colors: {
+        primary: '#6b4f2a',
+        secondary: '#4a361c',
+        accent: '#a67c2e',
+        background: '#f7f0e0',
+        text: '#40301a'
+      },
+      fonts: { heading: 'cinzel', name: 'greatvibes', body: 'cormorant' }
+    })
+  }
+]
+
+export const CATEGORIES = ['Formal', 'Modern', 'Academic', 'Corporate']

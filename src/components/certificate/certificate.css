@@ -1,0 +1,351 @@
+.cert {
+  position: relative;
+  width: 1000px;
+  height: 707px;
+  background: var(--bg);
+  color: var(--text);
+  overflow: hidden;
+  box-sizing: border-box;
+  font-family: var(--font-body);
+}
+
+.cert * {
+  box-sizing: border-box;
+}
+
+.cert-layer {
+  position: absolute;
+  inset: 0;
+}
+
+.cert-content {
+  position: absolute;
+  inset: 9% 11%;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ---------- Header ---------- */
+.cert-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 8px;
+}
+
+.cert-org-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  justify-content: center;
+}
+
+.cert-logo {
+  height: 62px;
+  width: 62px;
+  object-fit: contain;
+}
+
+.cert-logo-mark {
+  height: 58px;
+  width: 58px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 26px;
+  color: var(--white-on-primary, #fff);
+  background: var(--primary);
+  border: 2px solid var(--accent);
+}
+
+.cert-org-name {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 25px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--primary);
+}
+
+.cert-org-tagline {
+  font-size: 13px;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  opacity: 0.72;
+}
+
+.cert-rule {
+  width: 62%;
+  height: 3px;
+  margin: 8px auto 0;
+  background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  border-radius: 3px;
+}
+
+/* ---------- Body ---------- */
+.cert-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 4% 2%;
+}
+
+.cert-eyebrow {
+  font-family: var(--font-heading);
+  font-size: 17px;
+  letter-spacing: 0.42em;
+  text-transform: uppercase;
+  color: var(--accent-solid, var(--accent));
+  margin: 0 0 10px;
+  font-weight: 600;
+}
+
+.cert-recipient {
+  font-family: var(--font-name);
+  font-size: 74px;
+  line-height: 1.05;
+  margin: 4px 0 6px;
+  color: var(--primary);
+  font-weight: 600;
+}
+
+.cert-lead {
+  font-size: 17px;
+  letter-spacing: 0.06em;
+  opacity: 0.82;
+  margin: 6px 0;
+  font-style: italic;
+}
+
+.cert-course {
+  font-family: var(--font-heading);
+  font-size: 34px;
+  font-weight: 700;
+  color: var(--text);
+  margin: 8px 0 4px;
+  line-height: 1.15;
+}
+
+.cert-desc {
+  font-size: 15px;
+  line-height: 1.6;
+  max-width: 74%;
+  margin: 8px auto 0;
+  opacity: 0.78;
+}
+
+/* ---------- Footer ---------- */
+.cert-footer {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: end;
+  gap: 24px;
+  margin-top: auto;
+}
+
+.cert-sig,
+.cert-meta {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 4px;
+}
+
+.cert-sig-img {
+  height: 52px;
+  max-width: 210px;
+  object-fit: contain;
+  margin-bottom: 2px;
+}
+
+.cert-typed-sig {
+  font-family: var(--font-name);
+  font-size: 34px;
+  line-height: 1;
+  color: var(--primary);
+}
+
+.cert-line {
+  width: 210px;
+  height: 1.5px;
+  background: var(--text);
+  opacity: 0.55;
+  margin-top: 4px;
+}
+
+.cert-sig-name {
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  margin-top: 6px;
+}
+
+.cert-sig-title {
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  opacity: 0.7;
+}
+
+.cert-meta-item {
+  font-size: 14px;
+  letter-spacing: 0.04em;
+}
+
+.cert-meta-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  opacity: 0.6;
+}
+
+/* ---------- Badge seal ---------- */
+.cert-badge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 2px;
+}
+
+.cert-badge svg {
+  filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.18));
+}
+
+/* ---------- Band layout ---------- */
+.cert-band {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 118px;
+  z-index: 3;
+  background: linear-gradient(120deg, var(--primary), var(--secondary));
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 5%;
+  color: #fff;
+}
+
+.cert-band .cert-org-name {
+  color: #fff;
+}
+
+.cert-band .cert-org-tagline {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.cert-band .cert-logo-mark {
+  color: var(--primary);
+  background: #fff;
+  border-color: #fff;
+}
+
+.cert-band-layout .cert-content {
+  inset: 21% 10% 8%;
+}
+
+.cert-band-badge {
+  font-family: var(--font-heading);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  font-size: 12px;
+  opacity: 0.9;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  border-radius: 30px;
+  padding: 6px 14px;
+}
+
+/* ---------- Split layout ---------- */
+.cert-split {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 30%;
+  z-index: 3;
+  background: linear-gradient(160deg, var(--primary), var(--secondary));
+  color: #fff;
+  padding: 5% 3%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 12px;
+}
+
+.cert-split::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: -34px;
+  width: 34px;
+  height: 100%;
+  background: inherit;
+  clip-path: polygon(0 0, 100% 50%, 0 100%);
+}
+
+.cert-split .cert-org-name {
+  color: #fff;
+  font-size: 20px;
+  letter-spacing: 0.16em;
+}
+
+.cert-split .cert-org-tagline {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.cert-split-mark {
+  margin-top: auto;
+  font-family: var(--font-heading);
+  font-size: 13px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  opacity: 0.85;
+  line-height: 1.8;
+}
+
+.cert-split .cert-logo-mark {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.6);
+  color: #fff;
+}
+
+.cert-split-layout .cert-content {
+  inset: 8% 8% 8% 35%;
+  align-items: flex-start;
+  text-align: left;
+}
+
+.cert-split-layout .cert-body {
+  align-items: flex-start;
+  text-align: left;
+  padding-left: 0;
+}
+
+.cert-split-layout .cert-desc {
+  margin-left: 0;
+  max-width: 96%;
+}
+
+.cert-split-layout .cert-footer {
+  width: 100%;
+}
+
+.cert-split-layout .cert-recipient {
+  font-size: 62px;
+}
+
+.cert-split-layout .cert-rule {
+  margin-left: 0;
+  width: 40%;
+}
