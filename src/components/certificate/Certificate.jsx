@@ -39,7 +39,10 @@ const Certificate = forwardRef(function Certificate(
     '--size-lead': `${sizes.lead}px`,
     '--size-course': `${sizes.course}px`,
     '--size-desc': `${sizes.desc}px`,
-    '--size-signature': `${sizes.signature}px`
+    '--size-signature': `${sizes.signature}px`,
+    '--size-signer-name': `${sizes.signerName}px`,
+    '--size-signer-title': `${sizes.signerTitle}px`,
+    '--size-meta': `${sizes.meta}px`
   }
 
   const orgName = organization.name || 'Certify Academy'
@@ -112,7 +115,7 @@ const Certificate = forwardRef(function Certificate(
   return (
     <div ref={ref} className={rootClass} style={{ ...vars, background: colors.background }}>
       <BorderLayer design={d} />
-      <WatermarkLayer design={d} />
+      <WatermarkLayer design={d} organization={organization} />
       <Strip design={d} />
 
       {layout === 'band' && (

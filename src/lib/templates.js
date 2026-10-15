@@ -17,7 +17,7 @@ export const FONT_OPTIONS = [
 ]
 
 export const BORDER_OPTIONS = ['ornate', 'double', 'minimal', 'geo', 'ribbon']
-export const WATERMARK_OPTIONS = ['seal', 'monogram', 'text', 'none']
+export const WATERMARK_OPTIONS = ['seal', 'monogram', 'text', 'orgname', 'logo', 'none']
 
 export const LAYOUT_OPTIONS = [
   { key: 'center', label: 'Centered / Formal' },
@@ -35,6 +35,9 @@ export const DEFAULT_SIZES = {
   course: 34,
   desc: 15,
   signature: 52,
+  signerName: 15,
+  signerTitle: 12,
+  meta: 14,
   watermark: 100
 }
 
@@ -45,7 +48,10 @@ export const SIZE_FIELDS = [
   { key: 'lead', label: '"has completed" line', min: 10, max: 34 },
   { key: 'course', label: 'Course title', min: 16, max: 64 },
   { key: 'desc', label: 'Description', min: 10, max: 28 },
-  { key: 'signature', label: 'Signature', min: 24, max: 120 }
+  { key: 'signature', label: 'Signature', min: 24, max: 120 },
+  { key: 'signerName', label: 'Signatory name', min: 10, max: 30 },
+  { key: 'signerTitle', label: 'Signatory title', min: 8, max: 24 },
+  { key: 'meta', label: 'Date / ID text', min: 9, max: 26 }
 ]
 
 /* Merge a possibly-partial/legacy design with the size defaults so older

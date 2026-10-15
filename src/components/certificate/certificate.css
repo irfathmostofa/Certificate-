@@ -183,26 +183,26 @@
 }
 
 .cert-sig-name {
-  font-size: 15px;
+  font-size: var(--size-signer-name, 15px);
   font-weight: 600;
   letter-spacing: 0.06em;
   margin-top: 6px;
 }
 
 .cert-sig-title {
-  font-size: 12px;
+  font-size: var(--size-signer-title, 12px);
   letter-spacing: 0.14em;
   text-transform: uppercase;
   opacity: 0.7;
 }
 
 .cert-meta-item {
-  font-size: 14px;
+  font-size: var(--size-meta, 14px);
   letter-spacing: 0.04em;
 }
 
 .cert-meta-label {
-  font-size: 10px;
+  font-size: calc(var(--size-meta, 14px) * 0.72);
   text-transform: uppercase;
   letter-spacing: 0.18em;
   opacity: 0.6;

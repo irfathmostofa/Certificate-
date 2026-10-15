@@ -22,6 +22,8 @@ const WATERMARK_LABELS = {
   seal: 'Guilloché seal',
   monogram: 'Monogram initials',
   text: 'Rotated text',
+  orgname: 'Organization name',
+  logo: 'Organization logo',
   none: 'None'
 }
 
@@ -39,18 +41,32 @@ export default function DesignEditor({ value, onChange }) {
   const RangeField = ({ label, value, min, max, step = 1, suffix = 'px', onChange }) => (
     <div className="field">
       <label>
-        {label}: {value}
-        {suffix}
+        {label}
       </label>
-      <input
-        type="range"
-        min={min}
-        max={max}
-        step={step}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        style={{ width: '100%' }}
-      />
+      <div className="row" style={{ gap: 10, alignItems: 'center' }}>
+        <input
+          type="range"
+          min={min}
+          max={max}
+          step={step}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          style={{ flex: 1 }}
+        />
+        <input
+          className="input"
+          type="number"
+          min={min}
+          max={max}
+          step={step}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          style={{ width: 84 }}
+        />
+        <span className="hint" style={{ minWidth: 18 }}>
+          {suffix}
+        </span>
+      </div>
     </div>
   )
 
@@ -221,15 +237,23 @@ export default function DesignEditor({ value, onChange }) {
           </div>
           {d.watermark !== 'none' && (
             <>
-              <div className="field">
-                <label>Watermark text</label>
-                <input
-                  className="input"
-                  value={d.watermarkText || ''}
-                  onChange={(e) => patch({ watermarkText: e.target.value })}
-                  placeholder="CERTIFIED"
-                />
-              </div>
+              {(d.watermark === 'text' || d.watermark === 'orgname') && (
+                <div className="field">
+                  <label>{d.watermark === 'orgname' ? 'Watermark text (defaults to organization name)' : 'Watermark text'}</label>
+                  <input
+                    className="input"
+                    value={d.watermarkText || ''}
+                    onChange={(e) => patch({ watermarkText: e.target.value })}
+                    placeholder={d.watermark === 'orgname' ? 'Organization name' : 'CERTIFIED'}
+                  />
+                </div>
+              )}
+              {d.watermark === 'logo' && (
+                <p className="hint" style={{ marginTop: -2 }}>
+                  Uses the logo uploaded in Organization settings. Falls back to the organization name
+                  when no logo is set.
+                </p>
+              )}
               <div className="field">
                 <label>Watermark opacity: {Math.round((d.watermarkOpacity ?? 0.08) * 100)}%</label>
                 <input

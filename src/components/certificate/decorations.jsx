@@ -316,16 +316,91 @@ export function TextWatermark({ design }) {
   )
 }
 
+/* Organization name rendered as a large rotated watermark. */
+export function OrgNameWatermark({ design, organization }) {
+  const { primary } = design.colors
+  const opacity = design.watermarkOpacity ?? 0.06
+  const text = (design.watermarkText || organization?.name || 'ORGANIZATION').toUpperCase()
+  return (
+    <div
+      style={{
+        position: 'absolute',
+        inset: 0,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        pointerEvents: 'none',
+        overflow: 'hidden'
+      }}
+    >
+      <div
+        style={{
+          transform: `rotate(${-18 + watermarkRotation(design)}deg)`,
+          fontFamily: '"Playfair Display", serif',
+          fontWeight: 800,
+          fontSize: `${6.5 * watermarkScale(design)}vw`,
+          letterSpacing: '0.06em',
+          color: primary,
+          opacity,
+          whiteSpace: 'nowrap',
+          maxWidth: '94%',
+          textAlign: 'center',
+          userSelect: 'none'
+        }}
+      >
+        {text}
+      </div>
+    </div>
+  )
+}
+
+/* Organization logo image rendered as a watermark, centred and scaled. */
+export function LogoWatermark({ design, organization }) {
+  const opacity = design.watermarkOpacity ?? 0.06
+  const size = 50 * watermarkScale(design)
+  if (!organization?.logo) {
+    return OrgNameWatermark({ design, organization })
+  }
+  return (
+    <div
+      style={{
+        position: 'absolute',
+        inset: 0,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        pointerEvents: 'none',
+        overflow: 'hidden'
+      }}
+    >
+      <img
+        src={organization.logo}
+        alt=""
+        style={{
+          width: `${size}%`,
+          maxHeight: `${size}%`,
+          objectFit: 'contain',
+          opacity,
+          transform: `rotate(${watermarkRotation(design)}deg)`,
+          userSelect: 'none'
+        }}
+      />
+    </div>
+  )
+}
+
 const watermarkMap = {
   seal: SealWatermark,
   monogram: MonogramWatermark,
   text: TextWatermark,
+  orgname: OrgNameWatermark,
+  logo: LogoWatermark,
   none: () => null
 }
 
-export function WatermarkLayer({ design }) {
+export function WatermarkLayer({ design, organization }) {
   const Comp = watermarkMap[design.watermark] || SealWatermark
-  return <Comp design={design} />
+  return <Comp design={design} organization={organization} />
 }
 
 export function Strip({ design }) {
