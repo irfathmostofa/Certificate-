@@ -25,6 +25,35 @@ export const LAYOUT_OPTIONS = [
   { key: 'band', label: 'Top Band' }
 ]
 
+/* Default element sizes (px) and the range each control is allowed to take.
+   `watermark` is a percentage scale rather than a px value. */
+export const DEFAULT_SIZES = {
+  org: 25,
+  eyebrow: 17,
+  name: 74,
+  lead: 17,
+  course: 34,
+  desc: 15,
+  signature: 52,
+  watermark: 100
+}
+
+export const SIZE_FIELDS = [
+  { key: 'org', label: 'Organization name', min: 12, max: 48 },
+  { key: 'eyebrow', label: 'Eyebrow / label', min: 9, max: 34 },
+  { key: 'name', label: 'Recipient name', min: 32, max: 120 },
+  { key: 'lead', label: '"has completed" line', min: 10, max: 34 },
+  { key: 'course', label: 'Course title', min: 16, max: 64 },
+  { key: 'desc', label: 'Description', min: 10, max: 28 },
+  { key: 'signature', label: 'Signature', min: 24, max: 120 }
+]
+
+/* Merge a possibly-partial/legacy design with the size defaults so older
+   saved designs still render correctly. */
+export function resolveSizes(design = {}) {
+  return { ...DEFAULT_SIZES, ...(design?.sizes || {}) }
+}
+
 export function blankDesign(overrides = {}) {
   return {
     layout: 'center',
@@ -32,6 +61,7 @@ export function blankDesign(overrides = {}) {
     watermark: 'seal',
     watermarkText: 'CERTIFIED',
     watermarkOpacity: 0.08,
+    watermarkRotation: 0,
     strip: true,
     stripPosition: 'top',
     colors: {
@@ -46,6 +76,7 @@ export function blankDesign(overrides = {}) {
       name: 'greatvibes',
       body: 'cormorant'
     },
+    sizes: { ...DEFAULT_SIZES },
     showSeal: true,
     ...overrides
   }

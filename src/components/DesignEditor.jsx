@@ -3,7 +3,10 @@ import {
   FONT_OPTIONS,
   BORDER_OPTIONS,
   WATERMARK_OPTIONS,
-  LAYOUT_OPTIONS
+  LAYOUT_OPTIONS,
+  SIZE_FIELDS,
+  DEFAULT_SIZES,
+  resolveSizes
 } from '../lib/templates.js'
 import { ColorField } from './ui.jsx'
 
@@ -29,6 +32,27 @@ export default function DesignEditor({ value, onChange }) {
   const patch = (p) => onChange({ ...d, ...p })
   const patchColor = (key, v) => onChange({ ...d, colors: { ...d.colors, [key]: v } })
   const patchFont = (key, v) => onChange({ ...d, fonts: { ...d.fonts, [key]: v } })
+  const patchSize = (key, v) => onChange({ ...d, sizes: { ...resolveSizes(d), [key]: Number(v) } })
+
+  const sizes = resolveSizes(d)
+
+  const RangeField = ({ label, value, min, max, step = 1, suffix = 'px', onChange }) => (
+    <div className="field">
+      <label>
+        {label}: {value}
+        {suffix}
+      </label>
+      <input
+        type="range"
+        min={min}
+        max={max}
+        step={step}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        style={{ width: '100%' }}
+      />
+    </div>
+  )
 
   return (
     <div>
@@ -37,6 +61,7 @@ export default function DesignEditor({ value, onChange }) {
           ['layout', 'Layout'],
           ['colors', 'Colors'],
           ['type', 'Typography'],
+          ['sizes', 'Sizes'],
           ['deco', 'Decoration']
         ].map(([k, label]) => (
           <div key={k} className={`tab${tab === k ? ' active' : ''}`} onClick={() => setTab(k)}>
@@ -148,6 +173,36 @@ export default function DesignEditor({ value, onChange }) {
         </>
       )}
 
+      {tab === 'sizes' && (
+        <>
+          {SIZE_FIELDS.map((f) => (
+            <RangeField
+              key={f.key}
+              label={f.label}
+              value={sizes[f.key]}
+              min={f.min}
+              max={f.max}
+              onChange={(v) => patchSize(f.key, v)}
+            />
+          ))}
+          <RangeField
+            label="Watermark size"
+            value={sizes.watermark}
+            min={25}
+            max={200}
+            suffix="%"
+            onChange={(v) => patchSize('watermark', v)}
+          />
+          <button
+            type="button"
+            className="btn btn-ghost btn-sm"
+            onClick={() => patch({ sizes: { ...DEFAULT_SIZES } })}
+          >
+            Reset sizes to default
+          </button>
+        </>
+      )}
+
       {tab === 'deco' && (
         <>
           <div className="field">
@@ -184,6 +239,18 @@ export default function DesignEditor({ value, onChange }) {
                   step="0.01"
                   value={d.watermarkOpacity ?? 0.08}
                   onChange={(e) => patch({ watermarkOpacity: Number(e.target.value) })}
+                  style={{ width: '100%' }}
+                />
+              </div>
+              <div className="field">
+                <label>Watermark rotation: {d.watermarkRotation ?? 0}°</label>
+                <input
+                  type="range"
+                  min="-90"
+                  max="90"
+                  step="1"
+                  value={d.watermarkRotation ?? 0}
+                  onChange={(e) => patch({ watermarkRotation: Number(e.target.value) })}
                   style={{ width: '100%' }}
                 />
               </div>

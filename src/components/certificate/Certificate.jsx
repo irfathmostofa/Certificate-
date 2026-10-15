@@ -1,7 +1,7 @@
 import { forwardRef } from 'react'
 import { BorderLayer, WatermarkLayer, Strip } from './decorations.jsx'
 import BadgeSeal from './BadgeSeal.jsx'
-import { FONTS } from '../../lib/templates.js'
+import { FONTS, resolveSizes } from '../../lib/templates.js'
 import { initials } from '../../lib/certUtils.js'
 import './certificate.css'
 
@@ -13,6 +13,15 @@ const Certificate = forwardRef(function Certificate(
   const d = design
   const colors = d.colors
   const layout = d.layout || 'center'
+  const sizes = resolveSizes(d)
+
+  const name = c.recipientName || 'Recipient Name'
+  const nameSize =
+    name.length > 34
+      ? Math.round(sizes.name * 0.6)
+      : name.length > 24
+        ? Math.round(sizes.name * 0.76)
+        : sizes.name
 
   const vars = {
     '--bg': colors.background,
@@ -23,11 +32,15 @@ const Certificate = forwardRef(function Certificate(
     '--accent-solid': colors.accent,
     '--font-heading': FONTS[d.fonts.heading] || FONTS.cinzel,
     '--font-name': FONTS[d.fonts.name] || FONTS.greatvibes,
-    '--font-body': FONTS[d.fonts.body] || FONTS.cormorant
+    '--font-body': FONTS[d.fonts.body] || FONTS.cormorant,
+    '--size-org': `${sizes.org}px`,
+    '--size-eyebrow': `${sizes.eyebrow}px`,
+    '--size-name': `${nameSize}px`,
+    '--size-lead': `${sizes.lead}px`,
+    '--size-course': `${sizes.course}px`,
+    '--size-desc': `${sizes.desc}px`,
+    '--size-signature': `${sizes.signature}px`
   }
-
-  const name = c.recipientName || 'Recipient Name'
-  const nameSize = name.length > 34 ? 44 : name.length > 24 ? 56 : undefined
 
   const orgName = organization.name || 'Certify Academy'
   const orgTagline = organization.tagline || 'Excellence in Learning'
@@ -84,9 +97,7 @@ const Certificate = forwardRef(function Certificate(
   const Body = () => (
     <div className="cert-body">
       <p className="cert-eyebrow">{c.eyebrow || 'Certificate of Achievement'}</p>
-      <h1 className="cert-recipient" style={nameSize ? { fontSize: nameSize } : undefined}>
-        {name}
-      </h1>
+      <h1 className="cert-recipient">{name}</h1>
       <p className="cert-lead">has successfully completed the program</p>
       <h2 className="cert-course">{c.courseTitle || 'Course Title'}</h2>
       {c.description && <p className="cert-desc">{c.description}</p>}

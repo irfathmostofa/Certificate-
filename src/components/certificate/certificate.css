@@ -66,7 +66,7 @@
 .cert-org-name {
   font-family: var(--font-heading);
   font-weight: 700;
-  font-size: 25px;
+  font-size: var(--size-org, 25px);
   letter-spacing: 0.22em;
   text-transform: uppercase;
   color: var(--primary);
@@ -100,7 +100,7 @@
 
 .cert-eyebrow {
   font-family: var(--font-heading);
-  font-size: 17px;
+  font-size: var(--size-eyebrow, 17px);
   letter-spacing: 0.42em;
   text-transform: uppercase;
   color: var(--accent-solid, var(--accent));
@@ -110,7 +110,7 @@
 
 .cert-recipient {
   font-family: var(--font-name);
-  font-size: 74px;
+  font-size: var(--size-name, 74px);
   line-height: 1.05;
   margin: 4px 0 6px;
   color: var(--primary);
@@ -118,7 +118,7 @@
 }
 
 .cert-lead {
-  font-size: 17px;
+  font-size: var(--size-lead, 17px);
   letter-spacing: 0.06em;
   opacity: 0.82;
   margin: 6px 0;
@@ -127,7 +127,7 @@
 
 .cert-course {
   font-family: var(--font-heading);
-  font-size: 34px;
+  font-size: var(--size-course, 34px);
   font-weight: 700;
   color: var(--text);
   margin: 8px 0 4px;
@@ -135,7 +135,7 @@
 }
 
 .cert-desc {
-  font-size: 15px;
+  font-size: var(--size-desc, 15px);
   line-height: 1.6;
   max-width: 74%;
   margin: 8px auto 0;
@@ -161,7 +161,7 @@
 }
 
 .cert-sig-img {
-  height: 52px;
+  height: var(--size-signature, 52px);
   max-width: 210px;
   object-fit: contain;
   margin-bottom: 2px;
@@ -169,7 +169,7 @@
 
 .cert-typed-sig {
   font-family: var(--font-name);
-  font-size: 34px;
+  font-size: calc(var(--size-signature, 52px) * 0.65);
   line-height: 1;
   color: var(--primary);
 }
@@ -296,7 +296,7 @@
 
 .cert-split .cert-org-name {
   color: #fff;
-  font-size: 20px;
+  font-size: calc(var(--size-org, 25px) * 0.8);
   letter-spacing: 0.16em;
 }
 
@@ -342,7 +342,7 @@
 }
 
 .cert-split-layout .cert-recipient {
-  font-size: 62px;
+  font-size: calc(var(--size-name, 74px) * 0.84);
 }
 
 .cert-split-layout .cert-rule {

@@ -1,5 +1,19 @@
 /* Reusable decorative SVG layers for certificate templates. */
 
+import { resolveSizes } from '../../lib/templates.js'
+
+/* Watermark size (percent of the default) and rotation (degrees, added on top
+   of each watermark's own angle) come from the design. */
+function watermarkScale(design) {
+  const scale = Number(resolveSizes(design).watermark)
+  return Number.isFinite(scale) && scale > 0 ? scale / 100 : 1
+}
+
+function watermarkRotation(design) {
+  const deg = Number(design.watermarkRotation)
+  return Number.isFinite(deg) ? deg : 0
+}
+
 export function CornerFlourish({ color }) {
   return (
     <svg viewBox="0 0 140 140" width="100%" height="100%" fill="none">
@@ -187,6 +201,8 @@ export function SealWatermark({ design }) {
   const { primary } = design.colors
   const opacity = design.watermarkOpacity ?? 0.07
   const text = design.watermarkText || design.organization?.name || 'CERTIFIED'
+  const size = 46 * watermarkScale(design)
+  const rotation = watermarkRotation(design)
   return (
     <svg
       viewBox="0 0 320 320"
@@ -194,8 +210,8 @@ export function SealWatermark({ design }) {
         position: 'absolute',
         top: '50%',
         left: '50%',
-        width: '46%',
-        transform: 'translate(-50%, -50%)',
+        width: `${size}%`,
+        transform: `translate(-50%, -50%) rotate(${rotation}deg)`,
         opacity,
         pointerEvents: 'none'
       }}
@@ -250,10 +266,10 @@ export function MonogramWatermark({ design }) {
         position: 'absolute',
         top: '50%',
         left: '50%',
-        transform: 'translate(-50%, -50%)',
+        transform: `translate(-50%, -50%) rotate(${watermarkRotation(design)}deg)`,
         fontFamily: '"Playfair Display", serif',
         fontWeight: 900,
-        fontSize: '30vw',
+        fontSize: `${30 * watermarkScale(design)}vw`,
         lineHeight: 1,
         color: primary,
         opacity,
@@ -283,10 +299,10 @@ export function TextWatermark({ design }) {
     >
       <div
         style={{
-          transform: 'rotate(-24deg)',
+          transform: `rotate(${-24 + watermarkRotation(design)}deg)`,
           fontFamily: '"Cinzel", serif',
           fontWeight: 700,
-          fontSize: '7vw',
+          fontSize: `${7 * watermarkScale(design)}vw`,
           letterSpacing: '0.15em',
           color: primary,
           opacity,
