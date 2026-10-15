@@ -1,6 +1,8 @@
-export default function BadgeSeal({ primary, accent, text = 'OFFICIAL' }) {
+export default function BadgeSeal({ primary, accent, text = 'OFFICIAL', size = 118 }) {
+  const width = Number(size) > 0 ? Number(size) : 118
+  const height = Math.round(width * (150 / 140))
   return (
-    <svg viewBox="0 0 140 150" width="118" height="126" aria-hidden="true">
+    <svg viewBox="0 0 140 150" width={width} height={height} aria-hidden="true">
       <g>
         <path
           d="M40 96 L26 146 L52 132 L64 148 L70 104 Z"

@@ -38,6 +38,7 @@ export const DEFAULT_SIZES = {
   signerName: 15,
   signerTitle: 12,
   meta: 14,
+  seal: 118,
   watermark: 100
 }
 
@@ -51,7 +52,8 @@ export const SIZE_FIELDS = [
   { key: 'signature', label: 'Signature', min: 24, max: 120 },
   { key: 'signerName', label: 'Signatory name', min: 10, max: 30 },
   { key: 'signerTitle', label: 'Signatory title', min: 8, max: 24 },
-  { key: 'meta', label: 'Date / ID text', min: 9, max: 26 }
+  { key: 'meta', label: 'Date / ID text', min: 9, max: 26 },
+  { key: 'seal', label: 'Seal badge', min: 50, max: 220 }
 ]
 
 /* Merge a possibly-partial/legacy design with the size defaults so older

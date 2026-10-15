@@ -82,7 +82,7 @@ const Certificate = forwardRef(function Certificate(
 
       {d.showSeal !== false && (
         <div className="cert-badge">
-          <BadgeSeal primary={colors.primary} accent={colors.accent} text="SEAL" />
+          <BadgeSeal primary={colors.primary} accent={colors.accent} text="SEAL" size={sizes.seal} />
         </div>
       )}
 
