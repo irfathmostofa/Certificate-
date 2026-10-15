@@ -1,6 +1,7 @@
 import { supabase, isSupabaseConfigured, SIGNATURE_BUCKET } from './supabase.js'
 import { local, uid } from './storage.js'
 import { TEMPLATE_PRESETS, blankDesign } from './templates.js'
+import { DEFAULT_INTEGRATION } from './tutorLms.js'
 
 const SETTINGS_KEY = 'settings'
 const TEMPLATES_KEY = 'templates'
@@ -19,7 +20,8 @@ export const DEFAULT_SETTINGS = {
     title: 'Program Director',
     image: ''
   },
-  defaultDesign: blankDesign()
+  defaultDesign: blankDesign(),
+  integration: { ...DEFAULT_INTEGRATION }
 }
 
 export const mode = isSupabaseConfigured ? 'supabase' : 'demo'
@@ -97,9 +99,22 @@ export async function getSettings() {
       .eq('id', 1)
       .maybeSingle()
     if (error) throw error
-    return { ...DEFAULT_SETTINGS, ...(data?.data || {}) }
+    return normalizeSettings(data?.data)
   }
-  return { ...DEFAULT_SETTINGS, ...(local.get(SETTINGS_KEY) || {}) }
+  return normalizeSettings(local.get(SETTINGS_KEY))
+}
+
+/* Merge persisted settings over the defaults, keeping nested objects
+   (organization, signature, integration) intact when new keys are added. */
+function normalizeSettings(stored) {
+  const saved = stored || {}
+  return {
+    ...DEFAULT_SETTINGS,
+    ...saved,
+    organization: { ...DEFAULT_SETTINGS.organization, ...(saved.organization || {}) },
+    signature: { ...DEFAULT_SETTINGS.signature, ...(saved.signature || {}) },
+    integration: { ...DEFAULT_INTEGRATION, ...(saved.integration || {}) }
+  }
 }
 
 export async function saveSettings(settings) {

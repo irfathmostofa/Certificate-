@@ -128,6 +128,32 @@ export const IconLink = (p) => (
   </svg>
 )
 
+export const IconUsers = (p) => (
+  <svg {...base} {...p}>
+    <circle cx="9" cy="8" r="3.2" />
+    <path d="M3.5 19a5.5 5.5 0 0111 0" />
+    <path d="M16 5.2a3.2 3.2 0 010 5.6" />
+    <path d="M17.5 13.4A5.5 5.5 0 0121 19" />
+  </svg>
+)
+
+export const IconRefresh = (p) => (
+  <svg {...base} {...p}>
+    <path d="M20 11a8 8 0 00-14.3-4.6L4 8" />
+    <path d="M4 4v4h4" />
+    <path d="M4 13a8 8 0 0014.3 4.6L20 16" />
+    <path d="M20 20v-4h-4" />
+  </svg>
+)
+
+export const IconPlug = (p) => (
+  <svg {...base} {...p}>
+    <path d="M9 3v6M15 3v6" />
+    <path d="M6 9h12v3a6 6 0 01-6 6 6 6 0 01-6-6z" />
+    <path d="M12 18v3" />
+  </svg>
+)
+
 export const IconEye = (p) => (
   <svg {...base} {...p}>
     <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z" />

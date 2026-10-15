@@ -14,6 +14,11 @@ Admins can pick from professional certificate templates, customize their design,
 - **Single generation** — fill in one recipient, preview, then export or save.
 - **Bulk generation** — upload a CSV (or add recipients manually) and generate an entire cohort
   at once, then download everything as one combined PDF.
+- **Tutor LMS student import** — in Organization settings, enter your WordPress domain and
+  administrator credentials (username + Application Password). Students are pulled from
+  `/wp-json/custom-tutor/v1/enrolled-students` (Basic auth, paginated automatically). The
+  Students page lists the enrollments, filters by course or completion, and generates their
+  certificates in bulk — with manual recipients for anyone who is not in the list.
 - **Custom signature & logo** — upload a signature image (and logo) in Organization settings;
   a typed script signature is used as a fallback.
 - **Exports** — high-resolution **PDF**, **PNG** and **JPEG** generated in the browser.
@@ -81,8 +86,8 @@ src/
     Layout.jsx          # app shell (sidebar + topbar)
     ui.jsx, icons.jsx   # shared UI primitives
   context/              # AuthContext, DataContext
-  lib/                  # supabase client, data layer, templates, export helpers
-  pages/                # Login, Dashboard, Templates, Generate, BulkGenerate, Certificates, Settings
+  lib/                  # supabase client, data layer, templates, tutorLms, export helpers
+  pages/                # Login, Dashboard, Templates, Generate, BulkGenerate, Students, Certificates, Settings
   styles/global.css     # admin UI theme
 supabase/schema.sql     # database schema + policies
 ```

@@ -8,6 +8,7 @@ import Dashboard from './pages/Dashboard.jsx'
 import Templates from './pages/Templates.jsx'
 import Generate from './pages/Generate.jsx'
 import BulkGenerate from './pages/BulkGenerate.jsx'
+import Students from './pages/Students.jsx'
 import Certificates from './pages/Certificates.jsx'
 import Settings from './pages/Settings.jsx'
 import PublicCertificate from './pages/PublicCertificate.jsx'
@@ -73,6 +74,16 @@ export default function App() {
               <RequireAuth>
                 <Shell>
                   <BulkGenerate />
+                </Shell>
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/students"
+            element={
+              <RequireAuth>
+                <Shell>
+                  <Students />
                 </Shell>
               </RequireAuth>
             }
