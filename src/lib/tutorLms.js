@@ -228,14 +228,27 @@ export function isCompleted(student) {
   return !Number.isNaN(num) && num >= 100
 }
 
+/* Same-origin proxy that forwards the request server-side, avoiding CORS.
+   Implemented by api/wp-proxy.js (Vercel) and the Vite dev middleware. */
+function proxyUrlFor(url) {
+  const origin = typeof window !== 'undefined' && window.location ? window.location.origin : ''
+  return `${origin}/api/wp-proxy?url=${encodeURIComponent(url)}`
+}
+
 async function requestJson(url, headers) {
   let res
   try {
     res = await fetch(url, { headers, credentials: 'omit' })
   } catch {
-    throw new Error(
-      'Could not reach the WordPress API. Check the domain, and that the REST API allows requests from this app (CORS).'
-    )
+    // Direct cross-origin call was blocked (usually CORS). Retry through the
+    // app's own server, which talks to WordPress server-to-server.
+    try {
+      res = await fetch(proxyUrlFor(url), { headers, credentials: 'omit' })
+    } catch {
+      throw new Error(
+        'Could not reach the WordPress API. Check the domain, and that the REST API allows requests from this app (CORS).'
+      )
+    }
   }
 
   if (res.status === 401 || res.status === 403) {

@@ -20,6 +20,11 @@ function certify_studio_cors_origins() {
 		'#^https://[a-z0-9.-]+\.monkeycode-ai\.live$#i',
 	);
 
+	// Uncomment the next line to allow EVERY origin. Because this app sends no
+	// cookies (see fetch credentials: 'omit'), wildcard is allowed even with
+	// the Authorization header. Otherwise keep the explicit list above.
+	// $origins[] = '*';
+
 	return apply_filters( 'certify_studio_cors_origins', $origins );
 }
 
@@ -28,6 +33,9 @@ function certify_studio_cors_origin_allowed( $origin, $allowed ) {
 		$entry = (string) $entry;
 		if ( '' === $entry ) {
 			continue;
+		}
+		if ( '*' === $entry ) {
+			return true;
 		}
 		if ( $entry === $origin ) {
 			return true;
@@ -38,6 +46,10 @@ function certify_studio_cors_origin_allowed( $origin, $allowed ) {
 	}
 
 	return false;
+}
+
+function certify_studio_cors_is_wildcard() {
+	return in_array( '*', certify_studio_cors_origins(), true );
 }
 
 function certify_studio_send_cors_headers() {
@@ -51,10 +63,9 @@ function certify_studio_send_cors_headers() {
 		return;
 	}
 
-	header( 'Access-Control-Allow-Origin: ' . esc_url_raw( $origin ) );
+	header( 'Access-Control-Allow-Origin: ' . ( certify_studio_cors_is_wildcard() ? '*' : esc_url_raw( $origin ) ) );
 	header( 'Access-Control-Allow-Methods: GET, POST, OPTIONS' );
 	header( 'Access-Control-Allow-Headers: Authorization, Content-Type' );
-	header( 'Access-Control-Allow-Credentials: true' );
 	header( 'Access-Control-Max-Age: 86400' );
 	header( 'Vary: Origin', false );
 }
