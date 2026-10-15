@@ -20,7 +20,7 @@ import {
 
 function Stat({ icon, label, value, tone = '' }) {
   return (
-    <div className="card card-pad" style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
+    <div className="card card-pad dash-stat">
       <div className="ico stat" style={{ background: tone }}>
         {icon}
       </div>
@@ -53,16 +53,16 @@ export default function Dashboard() {
   ]
 
   return (
-    <div className="grid" style={{ gap: 24 }}>
-      <div className="grid grid-4">
+    <div className="dash">
+      <div className="dash-stats">
         {stats.map((s) => (
           <Stat key={s.label} {...s} />
         ))}
       </div>
 
-      <div className="grid" style={{ gridTemplateColumns: '1.6fr 1fr', gap: 24 }}>
-        <div className="card">
-          <div className="card-pad row-between" style={{ borderBottom: '1px solid var(--line)' }}>
+      <div className="dash-body">
+        <div className="card dash-recent">
+          <div className="card-pad row-between dash-recent-head">
             <div>
               <h3 style={{ margin: 0 }}>Recent certificates</h3>
               <p className="muted small" style={{ margin: '3px 0 0' }}>
@@ -79,16 +79,12 @@ export default function Dashboard() {
               Generate your first certificate to see it here.
             </EmptyState>
           ) : (
-            <div style={{ padding: 12 }}>
+            <div className="dash-recent-list">
               {certificates.slice(0, 4).map((cert) => {
                 const design = resolveDesign(cert, templates, settings)
                 return (
-                  <div
-                    key={cert.id}
-                    className="row"
-                    style={{ padding: 10, gap: 16, alignItems: 'center' }}
-                  >
-                    <div style={{ width: 190, flexShrink: 0 }}>
+                  <div key={cert.id} className="recent-item">
+                    <div className="recent-thumb">
                       <CertificatePreview maxWidth={190}>
                         <Certificate
                           certificate={cert}
@@ -98,12 +94,10 @@ export default function Dashboard() {
                         />
                       </CertificatePreview>
                     </div>
-                    <div style={{ minWidth: 0, flex: 1 }}>
-                      <div style={{ fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                        {cert.recipientName}
-                      </div>
+                    <div className="recent-info">
+                      <div className="recent-name">{cert.recipientName}</div>
                       <div className="muted small">{cert.courseTitle}</div>
-                      <div className="row small" style={{ gap: 8, marginTop: 6 }}>
+                      <div className="row small" style={{ gap: 8, marginTop: 6, flexWrap: 'wrap' }}>
                         <span className="badge gold">{cert.templateId}</span>
                         <span className="muted">{formatDate(cert.issueDate)}</span>
                       </div>
@@ -115,7 +109,7 @@ export default function Dashboard() {
           )}
         </div>
 
-        <div className="grid" style={{ gap: 24, alignContent: 'start' }}>
+        <div className="dash-side">
           <div className="card card-pad">
             <h3 style={{ marginTop: 0 }}>Quick actions</h3>
             <p className="muted small" style={{ marginTop: 0 }}>
@@ -136,7 +130,7 @@ export default function Dashboard() {
 
           <div className="card card-pad">
             <h3 style={{ marginTop: 0 }}>How it works</h3>
-            <ol className="muted small" style={{ paddingLeft: 18, lineHeight: 1.9, margin: 0 }}>
+            <ol className="muted small dash-steps">
               <li>Set your organization & signature in Organization.</li>
               <li>Pick a design template or customize your own.</li>
               <li>Fill recipient details and generate.</li>
