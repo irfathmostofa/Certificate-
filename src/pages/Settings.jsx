@@ -3,6 +3,7 @@ import { useData } from '../context/DataContext.jsx'
 import Certificate from '../components/certificate/Certificate.jsx'
 import CertificatePreview from '../components/certificate/CertificatePreview.jsx'
 import DesignEditor from '../components/DesignEditor.jsx'
+import SaveTemplateButton from '../components/SaveTemplateButton.jsx'
 import { uploadAsset } from '../lib/data.js'
 import { SAMPLE_CERT } from '../lib/certUtils.js'
 import { isSupabaseConfigured } from '../lib/supabase.js'
@@ -382,11 +383,25 @@ export default function Settings() {
         </div>
 
         <div className="card card-pad">
-          <h3 style={{ marginTop: 0 }}>Default design</h3>
-          <p className="muted small" style={{ marginTop: 0 }}>
-            Used when a certificate is generated with a template that has no custom design.
-          </p>
-          <DesignEditor value={value.defaultDesign} onChange={patchDesign} />
+          <div className="row-between" style={{ flexWrap: 'wrap', gap: 12 }}>
+            <div>
+              <h3 style={{ margin: 0 }}>Default design</h3>
+              <p className="muted small" style={{ margin: '3px 0 0' }}>
+                Used when a certificate is generated with a template that has no custom design.
+              </p>
+            </div>
+            <SaveTemplateButton
+              design={value.defaultDesign}
+              defaultName={`${value.organization.name || 'Organization'} Template`}
+              label="Save as template"
+              onSaved={(saved) =>
+                setMsg({ type: 'success', text: `Saved as template "${saved.name}".` })
+              }
+            />
+          </div>
+          <div style={{ marginTop: 14 }}>
+            <DesignEditor value={value.defaultDesign} onChange={patchDesign} />
+          </div>
         </div>
       </div>
 

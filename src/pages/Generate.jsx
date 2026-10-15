@@ -4,6 +4,8 @@ import { useData } from '../context/DataContext.jsx'
 import Certificate from '../components/certificate/Certificate.jsx'
 import CertificatePreview from '../components/certificate/CertificatePreview.jsx'
 import DesignEditor from '../components/DesignEditor.jsx'
+import SaveTemplateButton from '../components/SaveTemplateButton.jsx'
+import TemplateSelect from '../components/TemplateSelect.jsx'
 import { ShareLink } from '../components/ui.jsx'
 import { makeCertificateId, todayLong } from '../lib/data.js'
 import { certFileName, buildPublicUrl } from '../lib/certUtils.js'
@@ -116,18 +118,12 @@ export default function Generate() {
           </div>
 
           <div className="row" style={{ gap: 12, flexWrap: 'wrap' }}>
-            <select
-              className="select"
+            <TemplateSelect
+              templates={templates}
+              value={templateId}
+              onChange={setTemplateId}
               style={{ maxWidth: 320 }}
-              value={templateId || ''}
-              onChange={(e) => setTemplateId(e.target.value)}
-            >
-              {templates.map((t) => (
-                <option key={t.id} value={t.id}>
-                  {t.name} {t.custom ? '(custom)' : ''}
-                </option>
-              ))}
-            </select>
+            />
             <span className="badge gold">{template?.border}</span>
             <span className="badge">{template?.category}</span>
             <Link className="btn btn-ghost btn-sm" to="/templates" style={{ marginLeft: 'auto' }}>
@@ -261,16 +257,28 @@ export default function Generate() {
                 Override colors, fonts, border and watermark without changing the template.
               </p>
             </div>
-            <label className="row" style={{ gap: 8, cursor: 'pointer' }}>
-              <input
-                type="checkbox"
-                checked={customize}
-                onChange={(e) => (e.target.checked ? startCustomize() : setCustomize(false))}
+            <div className="row" style={{ gap: 8, flexWrap: 'wrap' }}>
+              <SaveTemplateButton
+                design={design}
+                defaultName={template ? `${template.name} (Custom)` : 'My Custom Template'}
+                onSaved={(saved) => {
+                  setTemplateId(saved.id)
+                  setCustomize(false)
+                  setCustomDesign(null)
+                  setMsg({ type: 'success', text: `Saved as template "${saved.name}".` })
+                }}
               />
-              <span className="small" style={{ fontWeight: 600 }}>
-                Enable
-              </span>
-            </label>
+              <label className="row" style={{ gap: 8, cursor: 'pointer' }}>
+                <input
+                  type="checkbox"
+                  checked={customize}
+                  onChange={(e) => (e.target.checked ? startCustomize() : setCustomize(false))}
+                />
+                <span className="small" style={{ fontWeight: 600 }}>
+                  Enable
+                </span>
+              </label>
+            </div>
           </div>
           {customize && (
             <div style={{ marginTop: 16 }}>

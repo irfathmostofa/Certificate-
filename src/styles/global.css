@@ -268,6 +268,7 @@ button {
   padding: 28px;
   max-width: 1360px;
   width: 100%;
+  margin: 0 auto;
 }
 
 /* ------------------------------- UI ------------------------------- */
@@ -295,6 +296,16 @@ button {
 .grid {
   display: grid;
   gap: 20px;
+}
+
+/* Grid/flex items default to min-width:auto, which lets wide children (tables,
+   long URLs) blow out the layout. Allow them to shrink instead. */
+.grid > *,
+.editor-layout > *,
+.dash-body > *,
+.dash-side > *,
+.main {
+  min-width: 0;
 }
 
 .grid-3 {
@@ -1101,6 +1112,13 @@ code {
   gap: 4px;
   border-bottom: 1px solid var(--line);
   margin-bottom: 18px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.tabs::-webkit-scrollbar {
+  display: none;
 }
 
 .tab {
@@ -1111,6 +1129,8 @@ code {
   cursor: pointer;
   border-bottom: 2px solid transparent;
   margin-bottom: -1px;
+  white-space: nowrap;
+  flex: 0 0 auto;
 }
 
 .tab.active {
@@ -1525,5 +1545,51 @@ code {
   }
   .share-input {
     flex: 1 1 100%;
+  }
+
+  /* Comfortable, thumb-friendly layout on phones */
+  .card-pad {
+    padding: 16px;
+  }
+  .row-between {
+    flex-wrap: wrap;
+  }
+  .editor-layout {
+    gap: 16px;
+  }
+  .grid,
+  .grid-2,
+  .grid-3,
+  .grid-4 {
+    gap: 14px;
+  }
+  .btn {
+    padding: 10px 14px;
+  }
+  .search-box {
+    flex: 1 1 100%;
+  }
+  .table-toolbar .select {
+    width: 100% !important;
+  }
+  .switch-row {
+    align-items: flex-start;
+  }
+  .tpl-meta h3 {
+    font-size: 15px;
+  }
+  .recent-info .row {
+    flex-wrap: wrap;
+  }
+}
+
+/* Slightly smaller screens: collapse multi-column stat and form grids a
+   little earlier so controls never feel cramped. */
+@media (max-width: 900px) {
+  .grid-4 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .tpl-grid {
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
   }
 }

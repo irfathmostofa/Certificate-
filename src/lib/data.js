@@ -152,6 +152,7 @@ export async function saveCustomTemplate(template) {
     category: template.category || 'Custom',
     description: template.description || '',
     design: template.design,
+    custom: true,
     created_at: new Date().toISOString()
   }
   if (isSupabaseConfigured) {

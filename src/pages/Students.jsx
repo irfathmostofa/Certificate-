@@ -3,6 +3,9 @@ import { Link } from 'react-router-dom'
 import { useData } from '../context/DataContext.jsx'
 import Certificate from '../components/certificate/Certificate.jsx'
 import CertificatePreview from '../components/certificate/CertificatePreview.jsx'
+import DesignEditor from '../components/DesignEditor.jsx'
+import SaveTemplateButton from '../components/SaveTemplateButton.jsx'
+import TemplateSelect from '../components/TemplateSelect.jsx'
 import { EmptyState, Modal, ShareLink } from '../components/ui.jsx'
 import { fetchTutorStudents, isCompleted } from '../lib/tutorLms.js'
 import { buildPublicUrl } from '../lib/certUtils.js'
@@ -27,6 +30,8 @@ export default function Students() {
   const configured = Boolean(integration?.enabled && integration?.baseUrl)
 
   const [templateId, setTemplateId] = useState('')
+  const [customize, setCustomize] = useState(false)
+  const [customDesign, setCustomDesign] = useState(null)
   const [students, setStudents] = useState([])
   const [selected, setSelected] = useState(() => new Set())
   const [loading, setLoading] = useState(false)
@@ -60,6 +65,12 @@ export default function Students() {
   }, [templates, templateId])
 
   const template = findTemplate(templateId) || templates[0]
+  const design = customize && customDesign ? customDesign : template?.design
+
+  const startCustomize = () => {
+    if (!customDesign) setCustomDesign(structuredClone(template?.design))
+    setCustomize(true)
+  }
 
   const courses = useMemo(() => {
     const set = new Set(students.map((s) => s.course).filter(Boolean))
@@ -163,7 +174,7 @@ export default function Students() {
         issueDate: common.issueDate,
         certificateId: makeCertificateId(),
         templateId,
-        design: template?.design || null
+        design: design || null
       }))
       const created = await addCertificates(items)
       setGenerated(created)
@@ -419,17 +430,33 @@ export default function Students() {
         </div>
 
         <div className="card card-pad">
-          <h3 style={{ marginTop: 0 }}>Batch settings</h3>
+          <div className="row-between" style={{ flexWrap: 'wrap', gap: 12, marginBottom: 12 }}>
+            <h3 style={{ margin: 0 }}>Batch settings</h3>
+            <div className="row" style={{ gap: 10, flexWrap: 'wrap' }}>
+              <SaveTemplateButton
+                design={design}
+                defaultName={template ? `${template.name} (Custom)` : 'My Custom Template'}
+                onSaved={(saved) => {
+                  setTemplateId(saved.id)
+                  setCustomize(false)
+                  setCustomDesign(null)
+                  setMsg({ type: 'success', text: `Saved as template "${saved.name}".` })
+                }}
+              />
+              <label className="check-inline">
+                <input
+                  type="checkbox"
+                  checked={customize}
+                  onChange={(e) => (e.target.checked ? startCustomize() : setCustomize(false))}
+                />
+                Customize design
+              </label>
+            </div>
+          </div>
           <div className="grid grid-2" style={{ gap: 12 }}>
             <div className="field">
               <label>Design template</label>
-              <select className="select" value={templateId} onChange={(e) => setTemplateId(e.target.value)}>
-                {templates.map((t) => (
-                  <option key={t.id} value={t.id}>
-                    {t.name} {t.custom ? '(custom)' : ''}
-                  </option>
-                ))}
-              </select>
+              <TemplateSelect templates={templates} value={templateId} onChange={setTemplateId} />
             </div>
             <div className="field">
               <label>Default course (used when a student has none)</label>
@@ -457,7 +484,7 @@ export default function Students() {
               onChange={(e) => setCommon({ ...common, description: e.target.value })}
             />
           </div>
-          <div className="field" style={{ marginBottom: 0 }}>
+          <div className="field" style={{ marginBottom: customize ? 14 : 0 }}>
             <label>Date of issue</label>
             <input
               className="input"
@@ -465,6 +492,11 @@ export default function Students() {
               onChange={(e) => setCommon({ ...common, issueDate: e.target.value })}
             />
           </div>
+          {customize && customDesign && (
+            <div style={{ borderTop: '1px solid var(--line)', paddingTop: 16 }}>
+              <DesignEditor value={customDesign} onChange={setCustomDesign} />
+            </div>
+          )}
         </div>
       </div>
 
@@ -478,7 +510,7 @@ export default function Students() {
             <CertificatePreview>
               <Certificate
                 certificate={previewCert}
-                design={template?.design}
+                design={design}
                 organization={settings?.organization}
                 signature={settings?.signature}
               />
@@ -540,7 +572,7 @@ export default function Students() {
           >
             <Certificate
               certificate={cert}
-              design={template?.design}
+              design={design}
               organization={settings?.organization}
               signature={settings?.signature}
             />
