@@ -1206,60 +1206,103 @@ code {
   margin-top: 8px;
 }
 
+/* Mobile drawer trigger + overlay (hidden on desktop) */
+.menu-toggle {
+  display: none;
+}
+
+.sidebar-close {
+  display: none;
+  margin-left: auto;
+  color: #cbd7f0;
+}
+
+.sidebar-close:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+}
+
+.sidebar-backdrop {
+  display: none;
+}
+
+.topbar-title {
+  min-width: 0;
+}
+
 @media (max-width: 1080px) {
   .app-shell {
     grid-template-columns: 1fr;
   }
+
+  /* Off-canvas drawer */
   .sidebar {
-    position: sticky;
+    position: fixed;
     top: 0;
-    z-index: 40;
-    height: auto;
-    flex-direction: row;
+    left: 0;
+    bottom: 0;
+    width: min(84vw, 300px);
+    height: 100vh;
+    z-index: 60;
+    transform: translateX(-100%);
+    transition: transform 0.26s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: var(--shadow-lg);
+    overflow-y: auto;
+  }
+
+  .app-shell.menu-open .sidebar {
+    transform: translateX(0);
+  }
+
+  .sidebar-close {
+    display: inline-flex;
+  }
+
+  .sidebar-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(11, 25, 54, 0.5);
+    backdrop-filter: blur(2px);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.24s ease, visibility 0.24s ease;
+    z-index: 55;
+  }
+
+  .app-shell.menu-open .sidebar-backdrop {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  /* 3-dot trigger in the topbar */
+  .menu-toggle {
+    display: inline-flex;
     align-items: center;
-    gap: 8px;
-    padding: 10px 14px;
-    overflow-x: auto;
-  }
-  .brand {
-    padding: 0 10px 0 0;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
     flex-shrink: 0;
+    color: var(--brand);
+    border: 1px solid var(--line);
+    background: #fff;
+    border-radius: 10px;
   }
-  .brand-text span {
-    display: none;
+
+  .menu-toggle:hover {
+    background: #f1f5f9;
+    color: var(--brand);
   }
-  .nav {
-    flex-direction: row;
-    margin-top: 0;
-    gap: 4px;
-  }
-  .nav-label {
-    display: none;
-  }
-  .nav-item {
-    white-space: nowrap;
-    flex-shrink: 0;
-  }
-  .sidebar-foot {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-top: 0;
-    margin-left: auto;
-    padding-top: 0;
-    border-top: 0;
-    flex-shrink: 0;
-  }
-  .signout-btn {
-    width: auto;
-    margin-top: 0;
-  }
-  .mode-pill {
-    display: none;
-  }
+
   .topbar {
-    position: static;
+    position: sticky;
+    gap: 12px;
   }
+
+  .topbar-title {
+    flex: 1;
+  }
+
   .editor-layout,
   .grid-3,
   .grid-4,

@@ -128,6 +128,14 @@ export const IconLink = (p) => (
   </svg>
 )
 
+export const IconDots = (p) => (
+  <svg {...base} {...p}>
+    <circle cx="12" cy="5" r="1.4" />
+    <circle cx="12" cy="12" r="1.4" />
+    <circle cx="12" cy="19" r="1.4" />
+  </svg>
+)
+
 export const IconUsers = (p) => (
   <svg {...base} {...p}>
     <circle cx="9" cy="8" r="3.2" />

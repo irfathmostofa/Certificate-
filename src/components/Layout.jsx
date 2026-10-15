@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react'
 import { NavLink, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext.jsx'
 import { mode } from '../lib/data.js'
@@ -9,7 +10,9 @@ import {
   IconUsers,
   IconCertificate,
   IconSettings,
-  IconLogout
+  IconLogout,
+  IconDots,
+  IconClose
 } from './icons.jsx'
 
 const NAV = [
@@ -37,6 +40,27 @@ export default function Layout({ children }) {
   const navigate = useNavigate()
   const location = useLocation()
   const [title, subtitle] = TITLES[location.pathname] || ['Certify Studio', '']
+  const [menuOpen, setMenuOpen] = useState(false)
+
+  // Close the mobile drawer whenever the route changes.
+  useEffect(() => {
+    setMenuOpen(false)
+  }, [location.pathname])
+
+  // Lock body scroll while the drawer is open on mobile.
+  useEffect(() => {
+    document.body.style.overflow = menuOpen ? 'hidden' : ''
+    return () => {
+      document.body.style.overflow = ''
+    }
+  }, [menuOpen])
+
+  // Close on Escape.
+  useEffect(() => {
+    const onKey = (e) => e.key === 'Escape' && setMenuOpen(false)
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [])
 
   const handleLogout = async () => {
     await signOut()
@@ -46,14 +70,22 @@ export default function Layout({ children }) {
   const name = user?.name || user?.email?.split('@')[0] || 'Admin'
 
   return (
-    <div className="app-shell">
-      <aside className="sidebar">
+    <div className={`app-shell${menuOpen ? ' menu-open' : ''}`}>
+      <div className="sidebar-backdrop" onClick={() => setMenuOpen(false)} aria-hidden="true" />
+      <aside className="sidebar" id="app-sidebar">
         <div className="brand">
           <div className="brand-mark">C</div>
           <div className="brand-text">
             <b>Certify Studio</b>
             <span>Certificate System</span>
           </div>
+          <button
+            className="icon-btn sidebar-close"
+            onClick={() => setMenuOpen(false)}
+            aria-label="Close menu"
+          >
+            <IconClose />
+          </button>
         </div>
 
         <nav className="nav">
@@ -85,7 +117,16 @@ export default function Layout({ children }) {
 
       <div className="main">
         <header className="topbar">
-          <div>
+          <button
+            className="icon-btn menu-toggle"
+            onClick={() => setMenuOpen((v) => !v)}
+            aria-label="Toggle navigation menu"
+            aria-controls="app-sidebar"
+            aria-expanded={menuOpen}
+          >
+            <IconDots />
+          </button>
+          <div className="topbar-title">
             <h1>{title}</h1>
             <p>{subtitle}</p>
           </div>
