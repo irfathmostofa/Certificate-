@@ -104,6 +104,10 @@ export function buildHeaders(cfg = {}) {
     if (name) headers[name] = String(cfg.headerValue || '')
   }
 
+  if (headers.Authorization) {
+    headers['X-Authorization'] = headers.Authorization
+  }
+
   return headers
 }
 
@@ -228,27 +232,41 @@ export function isCompleted(student) {
   return !Number.isNaN(num) && num >= 100
 }
 
-/* Same-origin proxy that forwards the request server-side, avoiding CORS.
-   Implemented by api/wp-proxy.js (Vercel) and the Vite dev middleware. */
-function proxyUrlFor(url) {
+/* Same-origin proxies. Never call WordPress from the browser on cPanel —
+   that is a cross-origin request and is what triggers the CORS error. */
+function proxyUrlsFor(url) {
   const origin = typeof window !== 'undefined' && window.location ? window.location.origin : ''
-  return `${origin}/api/wp-proxy?url=${encodeURIComponent(url)}`
+  const encoded = encodeURIComponent(url)
+  return [
+    `${origin}/api/wp-proxy?url=${encoded}`,
+    `${origin}/api/wp-proxy.php?url=${encoded}`,
+    `${origin}/wp-proxy.php?url=${encoded}`
+  ]
+}
+
+function isJsonResponse(res) {
+  const type = (res.headers.get('content-type') || '').toLowerCase()
+  return type.includes('application/json')
 }
 
 async function requestJson(url, headers) {
-  let res
-  try {
-    res = await fetch(url, { headers, credentials: 'omit' })
-  } catch {
-    // Direct cross-origin call was blocked (usually CORS). Retry through the
-    // app's own server, which talks to WordPress server-to-server.
+  let res = null
+
+  for (const target of proxyUrlsFor(url)) {
     try {
-      res = await fetch(proxyUrlFor(url), { headers, credentials: 'omit' })
+      const next = await fetch(target, { headers, credentials: 'omit' })
+      if (!isJsonResponse(next)) continue
+      res = next
+      break
     } catch {
-      throw new Error(
-        'Could not reach the WordPress API. Check the domain, and that the REST API allows requests from this app (CORS).'
-      )
+      /* try the next proxy */
     }
+  }
+
+  if (!res) {
+    throw new Error(
+      'WordPress proxy is missing on this host. Upload wp-proxy.php and .htaccess to the site root, then retry.'
+    )
   }
 
   if (res.status === 401 || res.status === 403) {

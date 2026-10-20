@@ -16,6 +16,8 @@ function certify_studio_cors_origins() {
 	$origins = array(
 		'http://localhost:5173',
 		'http://127.0.0.1:5173',
+		'https://certificate.teklabd.com',
+		'https://www.certificate.teklabd.com',
 		'https://certificate-mkr.vercel.app',
 		'#^https://[a-z0-9.-]+\.monkeycode-ai\.live$#i',
 	);
@@ -63,9 +65,14 @@ function certify_studio_send_cors_headers() {
 		return;
 	}
 
+	header_remove( 'Access-Control-Allow-Origin' );
+	header_remove( 'Access-Control-Allow-Methods' );
+	header_remove( 'Access-Control-Allow-Headers' );
+	header_remove( 'Access-Control-Allow-Credentials' );
+
 	header( 'Access-Control-Allow-Origin: ' . ( certify_studio_cors_is_wildcard() ? '*' : esc_url_raw( $origin ) ) );
 	header( 'Access-Control-Allow-Methods: GET, POST, OPTIONS' );
-	header( 'Access-Control-Allow-Headers: Authorization, Content-Type' );
+	header( 'Access-Control-Allow-Headers: Authorization, Content-Type, X-WP-Nonce' );
 	header( 'Access-Control-Max-Age: 86400' );
 	header( 'Vary: Origin', false );
 }

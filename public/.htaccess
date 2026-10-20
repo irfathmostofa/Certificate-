@@ -1,0 +1,24 @@
+<IfModule mod_rewrite.c>
+RewriteEngine On
+RewriteBase /
+
+RewriteCond %{HTTP:Authorization} .
+RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+
+RewriteRule ^api/wp-proxy\.php$ - [L]
+RewriteRule ^api/wp-proxy/?$ api/wp-proxy.php [L,QSA]
+RewriteRule ^wp-proxy\.php$ - [L]
+
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule . /index.html [L]
+</IfModule>
+
+<IfModule LiteSpeed>
+CacheDisable public /api/wp-proxy
+CacheDisable public /wp-proxy.php
+</IfModule>
+
+<IfModule mod_setenvif.c>
+SetEnvIf Authorization "(.*)" HTTP_AUTHORIZATION=$1
+</IfModule>

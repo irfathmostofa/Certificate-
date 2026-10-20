@@ -376,6 +376,7 @@ export function LogoWatermark({ design, organization }) {
       <img
         src={organization.logo}
         alt=""
+        crossOrigin="anonymous"
         style={{
           width: `${size}%`,
           maxHeight: `${size}%`,

@@ -52,7 +52,7 @@ const Certificate = forwardRef(function Certificate(
     <div className="cert-header">
       <div className="cert-org-row">
         {organization.logo ? (
-          <img className="cert-logo" src={organization.logo} alt="logo" />
+          <img className="cert-logo" src={organization.logo} alt="logo" crossOrigin="anonymous" />
         ) : (
           <div className="cert-logo-mark" style={light ? { color: colors.primary } : undefined}>
             {initials(orgName)}
@@ -71,7 +71,7 @@ const Certificate = forwardRef(function Certificate(
     <div className="cert-footer">
       <div className="cert-sig">
         {signature.image ? (
-          <img className="cert-sig-img" src={signature.image} alt="signature" />
+          <img className="cert-sig-img" src={signature.image} alt="signature" crossOrigin="anonymous" />
         ) : (
           <div className="cert-typed-sig">{signature.name || orgName}</div>
         )}
