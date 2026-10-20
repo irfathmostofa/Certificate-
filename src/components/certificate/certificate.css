@@ -35,32 +35,74 @@
   gap: 8px;
 }
 
+.cert-content .cert-header,
+.cert-split .cert-header {
+  width: 100%;
+}
+
+.cert-header-left {
+  align-items: flex-start;
+  text-align: left;
+}
+
+.cert-header-right {
+  align-items: flex-end;
+  text-align: right;
+}
+
 .cert-org-row {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: var(--logo-gap, 14px);
   justify-content: center;
 }
 
+.cert-org-align-left {
+  justify-content: flex-start;
+}
+
+.cert-org-align-right {
+  justify-content: flex-end;
+}
+
+.cert-org-top {
+  flex-direction: column;
+  align-items: center;
+}
+
+.cert-org-top.cert-org-align-left {
+  align-items: flex-start;
+}
+
+.cert-org-top.cert-org-align-right {
+  align-items: flex-end;
+}
+
 .cert-logo {
-  height: 62px;
-  width: 62px;
+  height: var(--size-logo, 62px);
+  width: var(--size-logo, 62px);
   object-fit: contain;
+  flex-shrink: 0;
 }
 
 .cert-logo-mark {
-  height: 58px;
-  width: 58px;
+  height: var(--size-logo, 62px);
+  width: var(--size-logo, 62px);
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   font-family: var(--font-heading);
   font-weight: 700;
-  font-size: 26px;
+  font-size: calc(var(--size-logo, 62px) * 0.42);
   color: var(--white-on-primary, #fff);
   background: var(--primary);
   border: 2px solid var(--accent);
+  flex-shrink: 0;
+}
+
+.cert-org-copy {
+  min-width: 0;
 }
 
 .cert-org-name {
@@ -70,6 +112,7 @@
   letter-spacing: 0.22em;
   text-transform: uppercase;
   color: var(--primary);
+  line-height: 1.2;
 }
 
 .cert-org-tagline {
@@ -77,6 +120,7 @@
   letter-spacing: 0.28em;
   text-transform: uppercase;
   opacity: 0.72;
+  margin-top: 4px;
 }
 
 .cert-rule {
@@ -85,6 +129,14 @@
   margin: 8px auto 0;
   background: linear-gradient(90deg, transparent, var(--accent), transparent);
   border-radius: 3px;
+}
+
+.cert-header-left .cert-rule {
+  margin-left: 0;
+}
+
+.cert-header-right .cert-rule {
+  margin-right: 0;
 }
 
 /* ---------- Body ---------- */
@@ -278,7 +330,7 @@
   padding: 5% 3%;
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: stretch;
   text-align: center;
   gap: 12px;
 }

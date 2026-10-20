@@ -4,6 +4,8 @@ import {
   BORDER_OPTIONS,
   WATERMARK_OPTIONS,
   LAYOUT_OPTIONS,
+  LOGO_POSITION_OPTIONS,
+  HEADER_ALIGN_OPTIONS,
   SIZE_FIELDS,
   DEFAULT_SIZES,
   resolveSizes
@@ -131,7 +133,7 @@ export default function DesignEditor({ value, onChange }) {
               </select>
             </div>
           )}
-          <label className="row" style={{ gap: 10, cursor: 'pointer' }}>
+          <label className="row" style={{ gap: 10, marginBottom: 12, cursor: 'pointer' }}>
             <input
               type="checkbox"
               checked={d.showSeal !== false}
@@ -141,6 +143,46 @@ export default function DesignEditor({ value, onChange }) {
               Show authorized seal badge
             </span>
           </label>
+          <label className="row" style={{ gap: 10, marginBottom: 12, cursor: 'pointer' }}>
+            <input
+              type="checkbox"
+              checked={d.showLogo !== false}
+              onChange={(e) => patch({ showLogo: e.target.checked })}
+            />
+            <span className="small" style={{ fontWeight: 600 }}>
+              Show logo / avatar
+            </span>
+          </label>
+          {d.showLogo !== false && (
+            <div className="field">
+              <label>Logo placement</label>
+              <select
+                className="select"
+                value={d.logoPosition || 'left'}
+                onChange={(e) => patch({ logoPosition: e.target.value })}
+              >
+                {LOGO_POSITION_OPTIONS.map((o) => (
+                  <option key={o.key} value={o.key}>
+                    {o.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+          <div className="field">
+            <label>Header alignment</label>
+            <select
+              className="select"
+              value={d.headerAlign || 'center'}
+              onChange={(e) => patch({ headerAlign: e.target.value })}
+            >
+              {HEADER_ALIGN_OPTIONS.map((o) => (
+                <option key={o.key} value={o.key}>
+                  {o.label}
+                </option>
+              ))}
+            </select>
+          </div>
         </>
       )}
 

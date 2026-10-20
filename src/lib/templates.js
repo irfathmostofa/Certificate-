@@ -29,6 +29,8 @@ export const LAYOUT_OPTIONS = [
    `watermark` is a percentage scale rather than a px value. */
 export const DEFAULT_SIZES = {
   org: 25,
+  logo: 62,
+  logoGap: 14,
   eyebrow: 17,
   name: 74,
   lead: 17,
@@ -42,7 +44,20 @@ export const DEFAULT_SIZES = {
   watermark: 100
 }
 
+export const LOGO_POSITION_OPTIONS = [
+  { key: 'left', label: 'Beside name' },
+  { key: 'top', label: 'Above name' }
+]
+
+export const HEADER_ALIGN_OPTIONS = [
+  { key: 'center', label: 'Center' },
+  { key: 'left', label: 'Left' },
+  { key: 'right', label: 'Right' }
+]
+
 export const SIZE_FIELDS = [
+  { key: 'logo', label: 'Logo / avatar', min: 24, max: 140 },
+  { key: 'logoGap', label: 'Logo to name spacing', min: 0, max: 48 },
   { key: 'org', label: 'Organization name', min: 12, max: 48 },
   { key: 'eyebrow', label: 'Eyebrow / label', min: 9, max: 34 },
   { key: 'name', label: 'Recipient name', min: 32, max: 120 },
@@ -86,6 +101,9 @@ export function blankDesign(overrides = {}) {
     },
     sizes: { ...DEFAULT_SIZES },
     showSeal: true,
+    showLogo: true,
+    logoPosition: 'left',
+    headerAlign: 'center',
     ...overrides
   }
 }

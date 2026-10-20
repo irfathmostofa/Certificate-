@@ -34,6 +34,8 @@ const Certificate = forwardRef(function Certificate(
     '--font-name': FONTS[d.fonts.name] || FONTS.greatvibes,
     '--font-body': FONTS[d.fonts.body] || FONTS.cormorant,
     '--size-org': `${sizes.org}px`,
+    '--size-logo': `${sizes.logo}px`,
+    '--logo-gap': `${sizes.logoGap}px`,
     '--size-eyebrow': `${sizes.eyebrow}px`,
     '--size-name': `${nameSize}px`,
     '--size-lead': `${sizes.lead}px`,
@@ -47,25 +49,31 @@ const Certificate = forwardRef(function Certificate(
 
   const orgName = organization.name || 'Certify Academy'
   const orgTagline = organization.tagline || 'Excellence in Learning'
+  const showLogo = d.showLogo !== false
+  const logoPosition = d.logoPosition === 'top' ? 'top' : 'left'
 
-  const Header = ({ light = false }) => (
-    <div className="cert-header">
-      <div className="cert-org-row">
-        {organization.logo ? (
-          <img className="cert-logo" src={organization.logo} alt="logo" crossOrigin="anonymous" />
-        ) : (
-          <div className="cert-logo-mark" style={light ? { color: colors.primary } : undefined}>
-            {initials(orgName)}
+  const Header = ({ light = false }) => {
+    const align = d.headerAlign || (light || layout !== 'center' ? 'left' : 'center')
+    return (
+      <div className={`cert-header cert-header-${align}`}>
+        <div className={`cert-org-row cert-org-${logoPosition} cert-org-align-${align}`}>
+          {showLogo &&
+            (organization.logo ? (
+              <img className="cert-logo" src={organization.logo} alt="logo" crossOrigin="anonymous" />
+            ) : (
+              <div className="cert-logo-mark" style={light ? { color: colors.primary } : undefined}>
+                {initials(orgName)}
+              </div>
+            ))}
+          <div className="cert-org-copy">
+            <div className="cert-org-name">{orgName}</div>
+            {orgTagline ? <div className="cert-org-tagline">{orgTagline}</div> : null}
           </div>
-        )}
-        <div style={{ textAlign: light ? 'left' : 'center' }}>
-          <div className="cert-org-name">{orgName}</div>
-          <div className="cert-org-tagline">{orgTagline}</div>
         </div>
+        {!light && <div className="cert-rule" />}
       </div>
-      {!light && <div className="cert-rule" />}
-    </div>
-  )
+    )
+  }
 
   const Footer = () => (
     <div className="cert-footer">
