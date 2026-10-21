@@ -82,7 +82,26 @@ export function resolveSizes(design = {}) {
   return { ...DEFAULT_SIZES, ...(design?.sizes || {}) }
 }
 
+export const DEFAULT_COPY = {
+  eyebrow: 'Certificate of Achievement',
+  lead: 'has successfully completed the program',
+  description:
+    'Awarded in recognition of the successful completion of all program requirements and assessments.',
+  dateLabel: 'Date of Issue',
+  idLabel: 'Certificate ID',
+  bandBadge: 'Official Certificate',
+  splitMark: 'EST. {year}',
+  sealTop: 'VERIFIED',
+  sealBottom: 'SEAL',
+  qrLabel: 'Scan to verify'
+}
+
+export function resolveCopy(design = {}) {
+  return { ...DEFAULT_COPY, ...(design?.copy || {}) }
+}
+
 export function blankDesign(overrides = {}) {
+  const { copy, ...rest } = overrides
   return {
     layout: 'center',
     border: 'ornate',
@@ -107,10 +126,11 @@ export function blankDesign(overrides = {}) {
     sizes: { ...DEFAULT_SIZES },
     showSeal: true,
     badgeStyle: 'seal',
+    copy: { ...DEFAULT_COPY, ...(copy || {}) },
     showLogo: true,
     logoPosition: 'left',
     headerAlign: 'center',
-    ...overrides
+    ...rest
   }
 }
 

@@ -2,7 +2,7 @@ import { forwardRef } from 'react'
 import { BorderLayer, WatermarkLayer, Strip } from './decorations.jsx'
 import BadgeSeal from './BadgeSeal.jsx'
 import VerifyQr from './VerifyQr.jsx'
-import { FONTS, resolveSizes } from '../../lib/templates.js'
+import { FONTS, resolveSizes, resolveCopy } from '../../lib/templates.js'
 import { initials, verifyUrlFor } from '../../lib/certUtils.js'
 import './certificate.css'
 
@@ -15,6 +15,7 @@ const Certificate = forwardRef(function Certificate(
   const colors = d.colors
   const layout = d.layout || 'center'
   const sizes = resolveSizes(d)
+  const copy = resolveCopy(d)
 
   const name = c.recipientName || 'Recipient Name'
   const nameSize =
@@ -97,31 +98,40 @@ const Certificate = forwardRef(function Certificate(
               size={sizes.seal}
               primary={colors.primary}
               accent={colors.accent}
+              label={copy.qrLabel}
             />
           ) : (
-            <BadgeSeal primary={colors.primary} accent={colors.accent} text="SEAL" size={sizes.seal} />
+            <BadgeSeal
+              primary={colors.primary}
+              accent={colors.accent}
+              top={copy.sealTop}
+              text={copy.sealBottom}
+              size={sizes.seal}
+            />
           )}
         </div>
       )}
 
       <div className="cert-meta">
         <div className="cert-meta-item">{c.issueDate || '—'}</div>
-        <div className="cert-meta-label">Date of Issue</div>
+        <div className="cert-meta-label">{copy.dateLabel}</div>
         <div className="cert-meta-item" style={{ marginTop: 6 }}>
           {c.certificateId || '—'}
         </div>
-        <div className="cert-meta-label">Certificate ID</div>
+        <div className="cert-meta-label">{copy.idLabel}</div>
       </div>
     </div>
   )
 
   const Body = () => (
     <div className="cert-body">
-      <p className="cert-eyebrow">{c.eyebrow || 'Certificate of Achievement'}</p>
+      <p className="cert-eyebrow">{c.eyebrow || copy.eyebrow}</p>
       <h1 className="cert-recipient">{name}</h1>
-      <p className="cert-lead">has successfully completed the program</p>
+      {copy.lead ? <p className="cert-lead">{copy.lead}</p> : null}
       <h2 className="cert-course">{c.courseTitle || 'Course Title'}</h2>
-      {c.description && <p className="cert-desc">{c.description}</p>}
+      {(c.description || copy.description) ? (
+        <p className="cert-desc">{c.description || copy.description}</p>
+      ) : null}
     </div>
   )
 
@@ -139,7 +149,7 @@ const Certificate = forwardRef(function Certificate(
       {layout === 'band' && (
         <div className="cert-band">
           <Header light />
-          <div className="cert-band-badge">Official Certificate</div>
+          {copy.bandBadge ? <div className="cert-band-badge">{copy.bandBadge}</div> : null}
         </div>
       )}
 
@@ -148,8 +158,12 @@ const Certificate = forwardRef(function Certificate(
           <Header light />
           <div className="cert-split-mark">
             {orgName}
-            <br />
-            EST. {new Date().getFullYear()}
+            {copy.splitMark ? (
+              <>
+                <br />
+                {copy.splitMark.replace('{year}', String(new Date().getFullYear()))}
+              </>
+            ) : null}
           </div>
         </div>
       )}

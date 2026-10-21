@@ -1,4 +1,10 @@
-export default function BadgeSeal({ primary, accent, text = 'OFFICIAL', size = 118 }) {
+export default function BadgeSeal({
+  primary,
+  accent,
+  top = 'VERIFIED',
+  text = 'SEAL',
+  size = 118
+}) {
   const width = Number(size) > 0 ? Number(size) : 118
   const height = Math.round(width * (150 / 140))
   return (
@@ -38,7 +44,7 @@ export default function BadgeSeal({ primary, accent, text = 'OFFICIAL', size = 1
           letterSpacing="1.5"
           fill={accent}
         >
-          VERIFIED
+          {(top || 'VERIFIED').slice(0, 12)}
         </text>
         <text
           x="70"
@@ -49,7 +55,7 @@ export default function BadgeSeal({ primary, accent, text = 'OFFICIAL', size = 1
           fontWeight="700"
           fill="#fff"
         >
-          {text}
+          {(text || 'SEAL').slice(0, 10)}
         </text>
       </g>
     </svg>

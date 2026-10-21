@@ -9,7 +9,9 @@ import {
   BADGE_STYLE_OPTIONS,
   SIZE_FIELDS,
   DEFAULT_SIZES,
-  resolveSizes
+  DEFAULT_COPY,
+  resolveSizes,
+  resolveCopy
 } from '../lib/templates.js'
 import { ColorField } from './ui.jsx'
 
@@ -38,6 +40,7 @@ export default function DesignEditor({ value, onChange }) {
   const patchColor = (key, v) => onChange({ ...d, colors: { ...d.colors, [key]: v } })
   const patchFont = (key, v) => onChange({ ...d, fonts: { ...d.fonts, [key]: v } })
   const patchSize = (key, v) => onChange({ ...d, sizes: { ...resolveSizes(d), [key]: Number(v) } })
+  const patchCopy = (key, v) => onChange({ ...d, copy: { ...resolveCopy(d), [key]: v } })
 
   const sizes = resolveSizes(d)
 
@@ -78,6 +81,7 @@ export default function DesignEditor({ value, onChange }) {
       <div className="tabs">
         {[
           ['layout', 'Layout'],
+          ['copy', 'Copy'],
           ['colors', 'Colors'],
           ['type', 'Typography'],
           ['sizes', 'Sizes'],
@@ -204,6 +208,113 @@ export default function DesignEditor({ value, onChange }) {
                 </option>
               ))}
             </select>
+          </div>
+        </>
+      )}
+
+      {tab === 'copy' && (
+        <>
+          <p className="hint" style={{ marginTop: 0 }}>
+            Static wording on this template. Recipient name, course, date and ID stay unique per certificate.
+          </p>
+          <div className="field">
+            <label>Heading</label>
+            <input
+              className="input"
+              value={resolveCopy(d).eyebrow}
+              onChange={(e) => patchCopy('eyebrow', e.target.value)}
+              placeholder={DEFAULT_COPY.eyebrow}
+            />
+          </div>
+          <div className="field">
+            <label>Lead line (under recipient name)</label>
+            <input
+              className="input"
+              value={resolveCopy(d).lead}
+              onChange={(e) => patchCopy('lead', e.target.value)}
+              placeholder={DEFAULT_COPY.lead}
+            />
+          </div>
+          <div className="field">
+            <label>Default description</label>
+            <textarea
+              className="textarea"
+              value={resolveCopy(d).description}
+              onChange={(e) => patchCopy('description', e.target.value)}
+              placeholder={DEFAULT_COPY.description}
+            />
+          </div>
+          <div className="grid grid-2" style={{ gap: 12 }}>
+            <div className="field">
+              <label>Date label</label>
+              <input
+                className="input"
+                value={resolveCopy(d).dateLabel}
+                onChange={(e) => patchCopy('dateLabel', e.target.value)}
+                placeholder={DEFAULT_COPY.dateLabel}
+              />
+            </div>
+            <div className="field">
+              <label>ID label</label>
+              <input
+                className="input"
+                value={resolveCopy(d).idLabel}
+                onChange={(e) => patchCopy('idLabel', e.target.value)}
+                placeholder={DEFAULT_COPY.idLabel}
+              />
+            </div>
+          </div>
+          <div className="grid grid-2" style={{ gap: 12 }}>
+            <div className="field">
+              <label>Top-band badge</label>
+              <input
+                className="input"
+                value={resolveCopy(d).bandBadge}
+                onChange={(e) => patchCopy('bandBadge', e.target.value)}
+                placeholder={DEFAULT_COPY.bandBadge}
+              />
+            </div>
+            <div className="field">
+              <label>Split sidebar line</label>
+              <input
+                className="input"
+                value={resolveCopy(d).splitMark}
+                onChange={(e) => patchCopy('splitMark', e.target.value)}
+                placeholder={DEFAULT_COPY.splitMark}
+              />
+              <span className="hint">Use {'{year}'} for the current year.</span>
+            </div>
+          </div>
+          <div className="grid grid-2" style={{ gap: 12 }}>
+            <div className="field">
+              <label>Seal top text</label>
+              <input
+                className="input"
+                value={resolveCopy(d).sealTop}
+                onChange={(e) => patchCopy('sealTop', e.target.value)}
+                placeholder={DEFAULT_COPY.sealTop}
+                maxLength={12}
+              />
+            </div>
+            <div className="field">
+              <label>Seal bottom text</label>
+              <input
+                className="input"
+                value={resolveCopy(d).sealBottom}
+                onChange={(e) => patchCopy('sealBottom', e.target.value)}
+                placeholder={DEFAULT_COPY.sealBottom}
+                maxLength={10}
+              />
+            </div>
+          </div>
+          <div className="field">
+            <label>QR caption</label>
+            <input
+              className="input"
+              value={resolveCopy(d).qrLabel}
+              onChange={(e) => patchCopy('qrLabel', e.target.value)}
+              placeholder={DEFAULT_COPY.qrLabel}
+            />
           </div>
         </>
       )}

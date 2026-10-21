@@ -19,7 +19,13 @@ function qrModules(value) {
   }
 }
 
-export default function VerifyQr({ value, size = 118, primary = '#1e293b', accent = '#c9a227' }) {
+export default function VerifyQr({
+  value,
+  size = 118,
+  primary = '#1e293b',
+  accent = '#c9a227',
+  label = 'Scan to verify'
+}) {
   const width = Number(size) > 0 ? Number(size) : 118
   const { n, path } = qrModules(value)
   const quiet = 1
@@ -48,9 +54,11 @@ export default function VerifyQr({ value, size = 118, primary = '#1e293b', accen
           <path d={path} />
         </g>
       </svg>
-      <div className="cert-qr-label" style={{ color: primary }}>
-        Scan to verify
-      </div>
+      {label ? (
+        <div className="cert-qr-label" style={{ color: primary }}>
+          {label}
+        </div>
+      ) : null}
     </div>
   )
 }

@@ -3,16 +3,13 @@ import { blankDesign, TEMPLATE_PRESETS } from './templates.js'
 export const SAMPLE_CERT = {
   recipientName: 'Amelia Richardson',
   courseTitle: 'Advanced Data Analytics',
-  description:
-    'Awarded in recognition of the successful completion of all program requirements and assessments.',
   issueDate: new Date().toLocaleDateString('en-US', {
     year: 'numeric',
     month: 'long',
     day: 'numeric'
   }),
   certificateId: 'CERT-2026-0A1B2C',
-  publicToken: 'CERT-PREV-SAMPLE01',
-  eyebrow: 'Certificate of Achievement'
+  publicToken: 'CERT-PREV-SAMPLE01'
 }
 
 export function resolveDesign(cert, templates, settings) {

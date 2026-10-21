@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import Papa from 'papaparse'
 import { useData } from '../context/DataContext.jsx'
 import Certificate from '../components/certificate/Certificate.jsx'
@@ -7,6 +7,7 @@ import TemplateSelect from '../components/TemplateSelect.jsx'
 import { Modal, ShareLink } from '../components/ui.jsx'
 import { buildPublicUrl } from '../lib/certUtils.js'
 import { makeCertificateId, makePublicToken, previewCertificateId, todayLong } from '../lib/data.js'
+import { resolveCopy } from '../lib/templates.js'
 import { exportManyPDF } from '../lib/export.js'
 import { uid } from '../lib/storage.js'
 import {
@@ -45,9 +46,8 @@ export default function BulkGenerate() {
   const [rows, setRows] = useState([])
   const [common, setCommon] = useState({
     courseTitle: '',
-    eyebrow: 'Certificate of Achievement',
-    description:
-      'Awarded in recognition of the successful completion of all program requirements and assessments.',
+    eyebrow: '',
+    description: '',
     issueDate: todayLong()
   })
   const [newRow, setNewRow] = useState({ recipientName: '', courseTitle: '', email: '' })
@@ -60,6 +60,19 @@ export default function BulkGenerate() {
   const nodeRefs = useRef({})
 
   const template = findTemplate(templateId) || templates[0]
+  const templateCopy = resolveCopy(template?.design)
+  const copySeededFor = useRef(null)
+
+  useEffect(() => {
+    if (!templateId) return
+    if (copySeededFor.current === templateId) return
+    copySeededFor.current = templateId
+    setCommon((c) => ({
+      ...c,
+      eyebrow: templateCopy.eyebrow,
+      description: templateCopy.description
+    }))
+  }, [templateId, templateCopy.eyebrow, templateCopy.description])
 
   const resolvedRows = useMemo(
     () =>
@@ -202,6 +215,7 @@ export default function BulkGenerate() {
               className="input"
               value={common.eyebrow}
               onChange={(e) => setCommon({ ...common, eyebrow: e.target.value })}
+              placeholder={templateCopy.eyebrow}
             />
           </div>
           <div className="field">

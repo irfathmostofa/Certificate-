@@ -8,16 +8,16 @@ import SaveTemplateButton from '../components/SaveTemplateButton.jsx'
 import TemplateSelect from '../components/TemplateSelect.jsx'
 import { ShareLink } from '../components/ui.jsx'
 import { makeCertificateId, makePublicToken, todayLong } from '../lib/data.js'
+import { resolveCopy } from '../lib/templates.js'
 import { certFileName, buildPublicUrl } from '../lib/certUtils.js'
 import { exportPDF, exportPNG, exportJPEG } from '../lib/export.js'
 import { IconDownload, IconCheck, IconSparkles, IconCopy } from '../components/icons.jsx'
 
-const emptyForm = (prefix) => ({
+const emptyForm = (prefix, copy = {}) => ({
   recipientName: '',
   courseTitle: '',
-  description:
-    'Awarded in recognition of the successful completion of all program requirements and assessments.',
-  eyebrow: 'Certificate of Achievement',
+  description: copy.description || '',
+  eyebrow: copy.eyebrow || '',
   issueDate: todayLong(),
   certificateId: makeCertificateId(prefix),
   publicToken: makePublicToken(prefix)
@@ -29,6 +29,7 @@ export default function Generate() {
   const [templateId, setTemplateId] = useState(params.get('template') || templates[0]?.id)
   const prefix = settings?.certificatePrefix
   const [form, setForm] = useState(() => emptyForm(prefix))
+  const copySeededFor = useRef(null)
   const [customize, setCustomize] = useState(false)
   const [customDesign, setCustomDesign] = useState(null)
   const [exporting, setExporting] = useState('')
@@ -57,6 +58,21 @@ export default function Generate() {
 
   const template = findTemplate(templateId) || templates[0]
   const design = customize && customDesign ? customDesign : template?.design
+  const templateCopy = resolveCopy(design)
+
+  useEffect(() => {
+    if (!templateId) return
+    setForm((f) => {
+      const copyChanged = copySeededFor.current !== templateId
+      if (!copyChanged && (f.recipientName || f.courseTitle)) return f
+      copySeededFor.current = templateId
+      return {
+        ...f,
+        eyebrow: templateCopy.eyebrow,
+        description: templateCopy.description
+      }
+    })
+  }, [templateId, templateCopy.eyebrow, templateCopy.description])
 
   const previewCert = useMemo(() => ({ ...form }), [form])
   const set = (key, val) => setForm((f) => ({ ...f, [key]: val }))
@@ -111,7 +127,7 @@ export default function Generate() {
       ])
       setLastSaved(created)
       setMsg({ type: 'success', text: 'Certificate saved. A public share link is ready below.' })
-      setForm(emptyForm(prefix))
+      setForm(emptyForm(prefix, templateCopy))
     } catch (e) {
       setMsg({ type: 'error', text: e.message || 'Could not save certificate.' })
     } finally {
@@ -217,7 +233,7 @@ export default function Generate() {
               className="input"
               value={form.eyebrow}
               onChange={(e) => set('eyebrow', e.target.value)}
-              placeholder="Certificate of Achievement"
+              placeholder={templateCopy.eyebrow}
             />
           </div>
           <div className="field">

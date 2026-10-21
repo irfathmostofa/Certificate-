@@ -10,6 +10,7 @@ import { EmptyState, Modal, ShareLink } from '../components/ui.jsx'
 import { fetchTutorStudents, isCompleted } from '../lib/tutorLms.js'
 import { buildPublicUrl } from '../lib/certUtils.js'
 import { makeCertificateId, makePublicToken, previewCertificateId, todayLong } from '../lib/data.js'
+import { resolveCopy } from '../lib/templates.js'
 import { exportManyPDF } from '../lib/export.js'
 import { uid } from '../lib/storage.js'
 import {
@@ -43,9 +44,8 @@ export default function Students() {
   const [onlyCompleted, setOnlyCompleted] = useState(false)
 
   const [common, setCommon] = useState({
-    eyebrow: 'Certificate of Achievement',
-    description:
-      'Awarded in recognition of the successful completion of all program requirements and assessments.',
+    eyebrow: '',
+    description: '',
     courseTitle: '',
     issueDate: todayLong()
   })
@@ -66,6 +66,19 @@ export default function Students() {
 
   const template = findTemplate(templateId) || templates[0]
   const design = customize && customDesign ? customDesign : template?.design
+  const templateCopy = resolveCopy(design)
+  const copySeededFor = useRef(null)
+
+  useEffect(() => {
+    if (!templateId) return
+    if (copySeededFor.current === templateId) return
+    copySeededFor.current = templateId
+    setCommon((c) => ({
+      ...c,
+      eyebrow: templateCopy.eyebrow,
+      description: templateCopy.description
+    }))
+  }, [templateId, templateCopy.eyebrow, templateCopy.description])
 
   const startCustomize = () => {
     if (!customDesign) setCustomDesign(structuredClone(template?.design))
@@ -476,6 +489,7 @@ export default function Students() {
               className="input"
               value={common.eyebrow}
               onChange={(e) => setCommon({ ...common, eyebrow: e.target.value })}
+              placeholder={templateCopy.eyebrow}
             />
           </div>
           <div className="field">

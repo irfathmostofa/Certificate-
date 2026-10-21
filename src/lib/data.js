@@ -1,6 +1,6 @@
 import { supabase, isSupabaseConfigured, SIGNATURE_BUCKET } from './supabase.js'
 import { local, uid } from './storage.js'
-import { TEMPLATE_PRESETS, blankDesign } from './templates.js'
+import { TEMPLATE_PRESETS, blankDesign, resolveCopy } from './templates.js'
 import { DEFAULT_INTEGRATION } from './tutorLms.js'
 
 const SETTINGS_KEY = 'settings'
@@ -242,21 +242,30 @@ export async function listCertificates() {
 }
 
 export async function createCertificates(items) {
-  const rows = items.map((it) => ({
-    id: uid(),
-    certificate_id: it.certificateId,
-    public_token: it.publicToken || makePublicToken(it.certificatePrefix),
-    recipient_name: it.recipientName,
-    course_title: it.courseTitle,
-    description: it.description || '',
-    template_id: it.templateId,
-    design: it.design || null,
-    organization: it.organization || null,
-    signature: it.signature || null,
-    issue_date: it.issueDate,
-    status: 'issued',
-    created_at: new Date().toISOString()
-  }))
+  const rows = items.map((it) => {
+    const baseCopy = resolveCopy(it.design)
+    const copy = {
+      ...baseCopy,
+      eyebrow: it.eyebrow || baseCopy.eyebrow,
+      description: it.description || baseCopy.description
+    }
+    const design = it.design ? { ...it.design, copy } : { copy }
+    return {
+      id: uid(),
+      certificate_id: it.certificateId,
+      public_token: it.publicToken || makePublicToken(it.certificatePrefix),
+      recipient_name: it.recipientName,
+      course_title: it.courseTitle,
+      description: it.description || copy.description || '',
+      template_id: it.templateId,
+      design,
+      organization: it.organization || null,
+      signature: it.signature || null,
+      issue_date: it.issueDate,
+      status: 'issued',
+      created_at: new Date().toISOString()
+    }
+  })
 
   if (isSupabaseConfigured) {
     const { data, error } = await supabase.from('certificates').insert(rows).select()
