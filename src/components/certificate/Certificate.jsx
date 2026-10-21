@@ -1,8 +1,9 @@
 import { forwardRef } from 'react'
 import { BorderLayer, WatermarkLayer, Strip } from './decorations.jsx'
 import BadgeSeal from './BadgeSeal.jsx'
+import VerifyQr from './VerifyQr.jsx'
 import { FONTS, resolveSizes } from '../../lib/templates.js'
-import { initials } from '../../lib/certUtils.js'
+import { initials, verifyUrlFor } from '../../lib/certUtils.js'
 import './certificate.css'
 
 const Certificate = forwardRef(function Certificate(
@@ -90,7 +91,16 @@ const Certificate = forwardRef(function Certificate(
 
       {d.showSeal !== false && (
         <div className="cert-badge">
-          <BadgeSeal primary={colors.primary} accent={colors.accent} text="SEAL" size={sizes.seal} />
+          {d.badgeStyle === 'qr' ? (
+            <VerifyQr
+              value={verifyUrlFor(c)}
+              size={sizes.seal}
+              primary={colors.primary}
+              accent={colors.accent}
+            />
+          ) : (
+            <BadgeSeal primary={colors.primary} accent={colors.accent} text="SEAL" size={sizes.seal} />
+          )}
         </div>
       )}
 

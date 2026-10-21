@@ -11,6 +11,7 @@ export const SAMPLE_CERT = {
     day: 'numeric'
   }),
   certificateId: 'CERT-2026-0A1B2C',
+  publicToken: 'CERT-PREV-SAMPLE01',
   eyebrow: 'Certificate of Achievement'
 }
 
@@ -44,6 +45,10 @@ export function buildPublicUrl(cert) {
   if (!token) return ''
   const origin = typeof window !== 'undefined' ? window.location.origin : ''
   return `${origin}/view/${encodeURIComponent(token)}`
+}
+
+export function verifyUrlFor(cert) {
+  return buildPublicUrl(cert)
 }
 
 export function certFileName(cert) {

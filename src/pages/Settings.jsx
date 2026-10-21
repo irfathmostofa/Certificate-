@@ -440,7 +440,8 @@ export default function Settings() {
               <Certificate
                 certificate={{
                   ...SAMPLE_CERT,
-                  certificateId: `${sanitizeCertificatePrefix(value.certificatePrefix)}-2026-0A1B2C`
+                  certificateId: `${sanitizeCertificatePrefix(value.certificatePrefix)}-2026-0A1B2C`,
+                  publicToken: `${sanitizeCertificatePrefix(value.certificatePrefix)}-PREV-SAMPLE01`
                 }}
                 design={value.defaultDesign}
                 organization={value.organization}

@@ -6,6 +6,7 @@ import {
   LAYOUT_OPTIONS,
   LOGO_POSITION_OPTIONS,
   HEADER_ALIGN_OPTIONS,
+  BADGE_STYLE_OPTIONS,
   SIZE_FIELDS,
   DEFAULT_SIZES,
   resolveSizes
@@ -140,9 +141,30 @@ export default function DesignEditor({ value, onChange }) {
               onChange={(e) => patch({ showSeal: e.target.checked })}
             />
             <span className="small" style={{ fontWeight: 600 }}>
-              Show authorized seal badge
+              Show verification badge
             </span>
           </label>
+          {d.showSeal !== false && (
+            <div className="field">
+              <label>Badge style</label>
+              <select
+                className="select"
+                value={d.badgeStyle === 'qr' ? 'qr' : 'seal'}
+                onChange={(e) => patch({ badgeStyle: e.target.value })}
+              >
+                {BADGE_STYLE_OPTIONS.map((o) => (
+                  <option key={o.key} value={o.key}>
+                    {o.label}
+                  </option>
+                ))}
+              </select>
+              {d.badgeStyle === 'qr' && (
+                <span className="hint">
+                  QR encodes the public verification link created when the certificate is generated.
+                </span>
+              )}
+            </div>
+          )}
           <label className="row" style={{ gap: 10, marginBottom: 12, cursor: 'pointer' }}>
             <input
               type="checkbox"

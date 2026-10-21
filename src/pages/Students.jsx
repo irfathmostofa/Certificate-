@@ -9,7 +9,7 @@ import TemplateSelect from '../components/TemplateSelect.jsx'
 import { EmptyState, Modal, ShareLink } from '../components/ui.jsx'
 import { fetchTutorStudents, isCompleted } from '../lib/tutorLms.js'
 import { buildPublicUrl } from '../lib/certUtils.js'
-import { makeCertificateId, previewCertificateId, todayLong } from '../lib/data.js'
+import { makeCertificateId, makePublicToken, previewCertificateId, todayLong } from '../lib/data.js'
 import { exportManyPDF } from '../lib/export.js'
 import { uid } from '../lib/storage.js'
 import {
@@ -173,6 +173,7 @@ export default function Students() {
         eyebrow: common.eyebrow,
         issueDate: common.issueDate,
         certificateId: makeCertificateId(settings?.certificatePrefix),
+        publicToken: makePublicToken(settings?.certificatePrefix),
         templateId,
         design: design || null
       }))
@@ -229,7 +230,8 @@ export default function Students() {
     eyebrow: common.eyebrow,
     description: common.description,
     issueDate: common.issueDate,
-    certificateId: previewCertificateId(settings?.certificatePrefix)
+    certificateId: previewCertificateId(settings?.certificatePrefix),
+    publicToken: previewCertificateId(settings?.certificatePrefix)
   }
 
   return (

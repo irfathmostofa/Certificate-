@@ -7,7 +7,7 @@ import DesignEditor from '../components/DesignEditor.jsx'
 import SaveTemplateButton from '../components/SaveTemplateButton.jsx'
 import TemplateSelect from '../components/TemplateSelect.jsx'
 import { ShareLink } from '../components/ui.jsx'
-import { makeCertificateId, todayLong } from '../lib/data.js'
+import { makeCertificateId, makePublicToken, todayLong } from '../lib/data.js'
 import { certFileName, buildPublicUrl } from '../lib/certUtils.js'
 import { exportPDF, exportPNG, exportJPEG } from '../lib/export.js'
 import { IconDownload, IconCheck, IconSparkles, IconCopy } from '../components/icons.jsx'
@@ -19,7 +19,8 @@ const emptyForm = (prefix) => ({
     'Awarded in recognition of the successful completion of all program requirements and assessments.',
   eyebrow: 'Certificate of Achievement',
   issueDate: todayLong(),
-  certificateId: makeCertificateId(prefix)
+  certificateId: makeCertificateId(prefix),
+  publicToken: makePublicToken(prefix)
 })
 
 export default function Generate() {
@@ -44,7 +45,11 @@ export default function Generate() {
   useEffect(() => {
     setForm((f) => {
       if (!f.recipientName && !f.courseTitle) {
-        return { ...f, certificateId: makeCertificateId(prefix) }
+        return {
+          ...f,
+          certificateId: makeCertificateId(prefix),
+          publicToken: makePublicToken(prefix)
+        }
       }
       return f
     })
@@ -243,7 +248,13 @@ export default function Generate() {
                 <button
                   className="icon-btn"
                   title="Regenerate ID"
-                  onClick={() => set('certificateId', makeCertificateId(prefix))}
+                  onClick={() =>
+                    setForm((f) => ({
+                      ...f,
+                      certificateId: makeCertificateId(prefix),
+                      publicToken: makePublicToken(prefix)
+                    }))
+                  }
                 >
                   <IconSparkles />
                 </button>

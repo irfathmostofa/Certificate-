@@ -55,6 +55,11 @@ export const HEADER_ALIGN_OPTIONS = [
   { key: 'right', label: 'Right' }
 ]
 
+export const BADGE_STYLE_OPTIONS = [
+  { key: 'seal', label: 'Verified seal' },
+  { key: 'qr', label: 'QR code' }
+]
+
 export const SIZE_FIELDS = [
   { key: 'logo', label: 'Logo / avatar', min: 24, max: 140 },
   { key: 'logoGap', label: 'Logo to name spacing', min: 0, max: 48 },
@@ -68,7 +73,7 @@ export const SIZE_FIELDS = [
   { key: 'signerName', label: 'Signatory name', min: 10, max: 30 },
   { key: 'signerTitle', label: 'Signatory title', min: 8, max: 24 },
   { key: 'meta', label: 'Date / ID text', min: 9, max: 26 },
-  { key: 'seal', label: 'Seal badge', min: 50, max: 220 }
+  { key: 'seal', label: 'Seal / QR', min: 50, max: 220 }
 ]
 
 /* Merge a possibly-partial/legacy design with the size defaults so older
@@ -101,6 +106,7 @@ export function blankDesign(overrides = {}) {
     },
     sizes: { ...DEFAULT_SIZES },
     showSeal: true,
+    badgeStyle: 'seal',
     showLogo: true,
     logoPosition: 'left',
     headerAlign: 'center',
