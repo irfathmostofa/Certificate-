@@ -4,7 +4,7 @@ import Certificate from '../components/certificate/Certificate.jsx'
 import CertificatePreview from '../components/certificate/CertificatePreview.jsx'
 import DesignEditor from '../components/DesignEditor.jsx'
 import SaveTemplateButton from '../components/SaveTemplateButton.jsx'
-import { uploadAsset } from '../lib/data.js'
+import { uploadAsset, sanitizeCertificatePrefix } from '../lib/data.js'
 import { SAMPLE_CERT } from '../lib/certUtils.js'
 import { isSupabaseConfigured } from '../lib/supabase.js'
 import { fetchTutorStudents, DEFAULT_ENDPOINT_PATH } from '../lib/tutorLms.js'
@@ -28,6 +28,7 @@ export default function Settings() {
   const patchOrg = (k, v) => setDraft({ ...value, organization: { ...value.organization, [k]: v } })
   const patchSig = (k, v) => setDraft({ ...value, signature: { ...value.signature, [k]: v } })
   const patchDesign = (design) => setDraft({ ...value, defaultDesign: design })
+  const patchField = (k, v) => setDraft({ ...value, [k]: v })
   const patchIntegration = (k, v) => {
     setTestResult(null)
     setDraft({ ...value, integration: { ...value.integration, [k]: v } })
@@ -71,7 +72,10 @@ export default function Settings() {
     setSaving(true)
     setMsg(null)
     try {
-      await persistSettings(value)
+      await persistSettings({
+        ...value,
+        certificatePrefix: sanitizeCertificatePrefix(value.certificatePrefix)
+      })
       setMsg({ type: 'success', text: 'Settings saved.' })
     } catch (e) {
       setMsg({ type: 'error', text: e.message || 'Could not save settings.' })
@@ -146,6 +150,27 @@ export default function Settings() {
               )}
               <span className="hint">PNG or SVG with transparent background works best.</span>
             </div>
+          </div>
+        </div>
+
+        <div className="card card-pad">
+          <h3 style={{ marginTop: 0 }}>Certificate ID</h3>
+          <div className="field">
+            <label>ID prefix</label>
+            <input
+              className="input"
+              value={value.certificatePrefix || ''}
+              onChange={(e) => patchField('certificatePrefix', e.target.value)}
+              placeholder="CERT"
+              spellCheck={false}
+              maxLength={12}
+              style={{ textTransform: 'uppercase', maxWidth: 220 }}
+            />
+            <span className="hint">
+              Used for new certificate IDs and public share tokens, e.g.{' '}
+              <code>{sanitizeCertificatePrefix(value.certificatePrefix)}-{new Date().getFullYear()}-A1B2C3</code>.
+              Letters and numbers only.
+            </span>
           </div>
         </div>
 
@@ -413,7 +438,10 @@ export default function Settings() {
           <div className="preview-frame">
             <CertificatePreview>
               <Certificate
-                certificate={SAMPLE_CERT}
+                certificate={{
+                  ...SAMPLE_CERT,
+                  certificateId: `${sanitizeCertificatePrefix(value.certificatePrefix)}-2026-0A1B2C`
+                }}
                 design={value.defaultDesign}
                 organization={value.organization}
                 signature={value.signature}

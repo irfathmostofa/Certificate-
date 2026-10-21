@@ -87,7 +87,8 @@ export function DataProvider({ children }) {
       const enriched = items.map((it) => ({
         ...it,
         organization: it.organization || settings?.organization || null,
-        signature: it.signature || settings?.signature || null
+        signature: it.signature || settings?.signature || null,
+        certificatePrefix: it.certificatePrefix || settings?.certificatePrefix
       }))
       const created = await createCertificates(enriched)
       setCertificates((prev) => [...created, ...prev])

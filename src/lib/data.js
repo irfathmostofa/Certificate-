@@ -8,6 +8,8 @@ const TEMPLATES_KEY = 'templates'
 const CERTS_KEY = 'certificates'
 const SEED_KEY = 'seeded'
 
+export const DEFAULT_CERTIFICATE_PREFIX = 'CERT'
+
 export const DEFAULT_SETTINGS = {
   organization: {
     name: 'Certify Academy',
@@ -20,23 +22,32 @@ export const DEFAULT_SETTINGS = {
     title: 'Program Director',
     image: ''
   },
+  certificatePrefix: DEFAULT_CERTIFICATE_PREFIX,
   defaultDesign: blankDesign(),
   integration: { ...DEFAULT_INTEGRATION }
 }
 
+export function sanitizeCertificatePrefix(value) {
+  const cleaned = String(value ?? '')
+    .toUpperCase()
+    .replace(/[^A-Z0-9]/g, '')
+    .slice(0, 12)
+  return cleaned || DEFAULT_CERTIFICATE_PREFIX
+}
+
 export const mode = isSupabaseConfigured ? 'supabase' : 'demo'
 
-/* Public verification tokens look like CERT-XXXX-XXXXXXXX and are the key
+/* Public verification tokens look like PREFIX-XXXX-XXXXXXXX and are the key
    used by the shareable public view link. They are long enough to be
    unguessable while remaining readable. */
-export function makePublicToken() {
+export function makePublicToken(prefix) {
   const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
   const block = (n) =>
     Array.from(
       { length: n },
       () => alphabet[Math.floor(Math.random() * alphabet.length)]
     ).join('')
-  return `CERT-${block(4)}-${block(8)}`
+  return `${sanitizeCertificatePrefix(prefix)}-${block(4)}-${block(8)}`
 }
 
 /* ------------------------------------------------------------------ */
@@ -66,11 +77,8 @@ function seedDemo() {
     }
   ].map((s) => ({
     id: uid(),
-    certificateId: `CERT-${new Date().getFullYear()}-${Math.random()
-      .toString(36)
-      .slice(2, 8)
-      .toUpperCase()}`,
-    publicToken: makePublicToken(),
+    certificateId: makeCertificateId(DEFAULT_SETTINGS.certificatePrefix),
+    publicToken: makePublicToken(DEFAULT_SETTINGS.certificatePrefix),
     issueDate: new Date().toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'long',
@@ -113,20 +121,27 @@ function normalizeSettings(stored) {
     ...saved,
     organization: { ...DEFAULT_SETTINGS.organization, ...(saved.organization || {}) },
     signature: { ...DEFAULT_SETTINGS.signature, ...(saved.signature || {}) },
-    integration: { ...DEFAULT_INTEGRATION, ...(saved.integration || {}) }
+    integration: { ...DEFAULT_INTEGRATION, ...(saved.integration || {}) },
+    certificatePrefix: sanitizeCertificatePrefix(
+      saved.certificatePrefix ?? DEFAULT_SETTINGS.certificatePrefix
+    )
   }
 }
 
 export async function saveSettings(settings) {
+  const next = {
+    ...settings,
+    certificatePrefix: sanitizeCertificatePrefix(settings?.certificatePrefix)
+  }
   if (isSupabaseConfigured) {
     const { error } = await supabase
       .from('settings')
-      .upsert({ id: 1, data: settings }, { onConflict: 'id' })
+      .upsert({ id: 1, data: next }, { onConflict: 'id' })
     if (error) throw error
-    return settings
+    return next
   }
-  local.set(SETTINGS_KEY, settings)
-  return settings
+  local.set(SETTINGS_KEY, next)
+  return next
 }
 
 /* ------------------------------------------------------------------ */
@@ -230,7 +245,7 @@ export async function createCertificates(items) {
   const rows = items.map((it) => ({
     id: uid(),
     certificate_id: it.certificateId,
-    public_token: it.publicToken || makePublicToken(),
+    public_token: it.publicToken || makePublicToken(it.certificatePrefix),
     recipient_name: it.recipientName,
     course_title: it.courseTitle,
     description: it.description || '',
@@ -331,10 +346,14 @@ export function fileToDataURL(file) {
 /* Helpers                                                             */
 /* ------------------------------------------------------------------ */
 
-export function makeCertificateId() {
+export function makeCertificateId(prefix) {
   const y = new Date().getFullYear()
   const rand = Math.random().toString(36).slice(2, 8).toUpperCase()
-  return `CERT-${y}-${rand}`
+  return `${sanitizeCertificatePrefix(prefix)}-${y}-${rand}`
+}
+
+export function previewCertificateId(prefix) {
+  return `${sanitizeCertificatePrefix(prefix)}-PREVIEW`
 }
 
 export function todayLong() {

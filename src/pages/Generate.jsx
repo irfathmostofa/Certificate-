@@ -12,21 +12,22 @@ import { certFileName, buildPublicUrl } from '../lib/certUtils.js'
 import { exportPDF, exportPNG, exportJPEG } from '../lib/export.js'
 import { IconDownload, IconCheck, IconSparkles, IconCopy } from '../components/icons.jsx'
 
-const emptyForm = () => ({
+const emptyForm = (prefix) => ({
   recipientName: '',
   courseTitle: '',
   description:
     'Awarded in recognition of the successful completion of all program requirements and assessments.',
   eyebrow: 'Certificate of Achievement',
   issueDate: todayLong(),
-  certificateId: makeCertificateId()
+  certificateId: makeCertificateId(prefix)
 })
 
 export default function Generate() {
   const { templates, settings, addCertificates, findTemplate } = useData()
   const [params] = useSearchParams()
   const [templateId, setTemplateId] = useState(params.get('template') || templates[0]?.id)
-  const [form, setForm] = useState(emptyForm)
+  const prefix = settings?.certificatePrefix
+  const [form, setForm] = useState(() => emptyForm(prefix))
   const [customize, setCustomize] = useState(false)
   const [customDesign, setCustomDesign] = useState(null)
   const [exporting, setExporting] = useState('')
@@ -39,6 +40,15 @@ export default function Generate() {
   useEffect(() => {
     if (!templateId && templates[0]) setTemplateId(templates[0].id)
   }, [templates, templateId])
+
+  useEffect(() => {
+    setForm((f) => {
+      if (!f.recipientName && !f.courseTitle) {
+        return { ...f, certificateId: makeCertificateId(prefix) }
+      }
+      return f
+    })
+  }, [prefix])
 
   const template = findTemplate(templateId) || templates[0]
   const design = customize && customDesign ? customDesign : template?.design
@@ -96,7 +106,7 @@ export default function Generate() {
       ])
       setLastSaved(created)
       setMsg({ type: 'success', text: 'Certificate saved. A public share link is ready below.' })
-      setForm(emptyForm())
+      setForm(emptyForm(prefix))
     } catch (e) {
       setMsg({ type: 'error', text: e.message || 'Could not save certificate.' })
     } finally {
@@ -233,7 +243,7 @@ export default function Generate() {
                 <button
                   className="icon-btn"
                   title="Regenerate ID"
-                  onClick={() => set('certificateId', makeCertificateId())}
+                  onClick={() => set('certificateId', makeCertificateId(prefix))}
                 >
                   <IconSparkles />
                 </button>
