@@ -163,7 +163,9 @@ export default function Certificates() {
                       </td>
                       <td className="muted">{cert.courseTitle}</td>
                       <td>
-                        <span className="badge gold">{cert.templateId}</span>
+                        <span className="badge gold">
+                          {templates.find((x) => x.id === cert.templateId)?.name || cert.templateId}
+                        </span>
                       </td>
                       <td className="muted small">{formatDate(cert.issueDate)}</td>
                       <td>

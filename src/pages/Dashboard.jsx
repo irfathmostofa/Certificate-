@@ -98,7 +98,9 @@ export default function Dashboard() {
                       <div className="recent-name">{cert.recipientName}</div>
                       <div className="muted small">{cert.courseTitle}</div>
                       <div className="row small" style={{ gap: 8, marginTop: 6, flexWrap: 'wrap' }}>
-                        <span className="badge gold">{cert.templateId}</span>
+                        <span className="badge gold">
+                          {templates.find((x) => x.id === cert.templateId)?.name || cert.templateId}
+                        </span>
                         <span className="muted">{formatDate(cert.issueDate)}</span>
                       </div>
                     </div>
