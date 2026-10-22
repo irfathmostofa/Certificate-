@@ -9,7 +9,8 @@ import {
   resolveOrganization,
   resolveSignature,
   certFileName,
-  formatDate
+  formatDate,
+  initials
 } from '../lib/certUtils.js'
 import { exportPDF, exportPNG, exportJPEG } from '../lib/export.js'
 import { IconCertificate, IconDownload, IconCheck } from '../components/icons.jsx'
@@ -41,6 +42,10 @@ export default function PublicCertificate() {
   }, [token])
 
   const design = cert ? resolveDesign(cert, [], null) : null
+  const organization = cert ? resolveOrganization(cert, null) : null
+  const companyName = organization?.name || ''
+  const companyMark = initials(companyName) || 'C'
+  const companyHref = organization?.website || undefined
 
   const doExport = async (type) => {
     if (!cert || !exportRef.current) return
@@ -60,13 +65,23 @@ export default function PublicCertificate() {
   return (
     <div className="verify-wrap">
       <header className="verify-bar">
-        <Link className="brand" to="/" style={{ textDecoration: 'none' }}>
-          <div className="brand-mark">C</div>
+        <a
+          className="brand"
+          href={companyHref || undefined}
+          target={companyHref ? '_blank' : undefined}
+          rel={companyHref ? 'noreferrer' : undefined}
+          style={{ textDecoration: 'none', cursor: companyHref ? 'pointer' : 'default' }}
+        >
+          {organization?.logo ? (
+            <img className="brand-mark brand-mark-logo" src={organization.logo} alt="" />
+          ) : (
+            <div className="brand-mark">{companyMark}</div>
+          )}
           <div className="brand-text">
-            <b style={{ color: 'var(--brand)' }}>Certify Studio</b>
+            <b style={{ color: 'var(--brand)' }}>{companyName || 'Certificate Verification'}</b>
             <span>Certificate Verification</span>
           </div>
-        </Link>
+        </a>
         {cert && (
           <div className="verify-actions">
             <button
@@ -131,7 +146,7 @@ export default function PublicCertificate() {
                 <Certificate
                   certificate={cert}
                   design={design}
-                  organization={resolveOrganization(cert, null)}
+                  organization={organization}
                   signature={resolveSignature(cert, null)}
                 />
               </CertificatePreview>
@@ -155,6 +170,17 @@ export default function PublicCertificate() {
                 <span className="v">{cert.certificateId}</span>
               </div>
             </div>
+
+            <p className="verify-credit">
+              Developed By{' '}
+              <a
+                href="https://irfathchowdhuryjoy.web.app/"
+                target="_blank"
+                rel="noreferrer"
+              >
+                Md. Irfath Chowdhury
+              </a>
+            </p>
           </>
         )}
       </main>
@@ -169,7 +195,7 @@ export default function PublicCertificate() {
             ref={exportRef}
             certificate={cert}
             design={design}
-            organization={resolveOrganization(cert, null)}
+            organization={organization}
             signature={resolveSignature(cert, null)}
           />
         </div>
