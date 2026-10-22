@@ -424,6 +424,10 @@ export default function BulkGenerate() {
 
           {tab === 'csv' && (
             <>
+              <p className="muted small" style={{ marginTop: 0 }}>
+                Upload a spreadsheet of recipients. Heading, description and styling come from the
+                selected template.
+              </p>
               <label
                 className="dropzone"
                 onDragOver={(e) => {
@@ -437,10 +441,13 @@ export default function BulkGenerate() {
                   type="file"
                   accept=".csv,.txt"
                   style={{ display: 'none' }}
-                  onChange={(e) => onFile(e.target.files?.[0])}
+                  onChange={(e) => {
+                    onFile(e.target.files?.[0])
+                    e.target.value = ''
+                  }}
                 />
-                <IconUpload width={26} height={26} />
-                <div style={{ fontWeight: 600, marginTop: 8 }}>Drop a CSV file or click to upload</div>
+                <IconUpload width={28} height={28} />
+                <div style={{ fontWeight: 600 }}>Drop a CSV file or click to upload</div>
                 <div className="hint">Columns: name, course (optional), email (optional)</div>
               </label>
 
