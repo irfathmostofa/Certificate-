@@ -45,7 +45,7 @@ export default function Login() {
           <div style={{ marginTop: 26 }}>
             {[
               'Ornate borders, watermarks and wax-style seals',
-              'Single & bulk generation from CSV',
+              'Single & bulk generation from CSV or Tutor LMS',
               'Custom signature image and organization branding',
               'Export to high-resolution PDF, PNG or JPEG'
             ].map((t) => (

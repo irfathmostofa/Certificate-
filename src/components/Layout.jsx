@@ -7,7 +7,6 @@ import {
   IconTemplate,
   IconSparkles,
   IconUpload,
-  IconUsers,
   IconCertificate,
   IconSettings,
   IconLogout,
@@ -20,7 +19,6 @@ const NAV = [
   { to: '/templates', label: 'Templates', icon: IconTemplate },
   { to: '/generate', label: 'Generate', icon: IconSparkles },
   { to: '/bulk', label: 'Bulk Generate', icon: IconUpload },
-  { to: '/students', label: 'Students', icon: IconUsers },
   { to: '/certificates', label: 'Certificates', icon: IconCertificate },
   { to: '/settings', label: 'Organization', icon: IconSettings }
 ]
@@ -29,8 +27,7 @@ const TITLES = {
   '/': ['Dashboard', 'Overview of your certificate activity'],
   '/templates': ['Design Templates', 'Choose and customize professional certificate designs'],
   '/generate': ['Generate Certificate', 'Create a single certificate for one recipient'],
-  '/bulk': ['Bulk Generation', 'Create certificates for many recipients at once'],
-  '/students': ['Students · Tutor LMS', 'Import students and generate their certificates'],
+  '/bulk': ['Bulk Generation', 'Add recipients from manual entry, CSV, or Tutor LMS'],
   '/certificates': ['Certificates', 'Search, preview and export issued certificates'],
   '/settings': ['Organization & Signature', 'Set your brand, logo and authorized signature']
 }

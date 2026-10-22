@@ -245,7 +245,7 @@ export default function Settings() {
             />
             <span>
               <b>Enable student import</b>
-              <span className="hint">Show the Students page and allow pulling from the API.</span>
+              <span className="hint">Allow pulling students from the API on Bulk Generate.</span>
             </span>
           </label>
 

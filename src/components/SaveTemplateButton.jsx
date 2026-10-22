@@ -5,9 +5,8 @@ import { CATEGORIES } from '../lib/templates.js'
 import { IconPlus, IconCheck } from './icons.jsx'
 
 /* Persists the current design as a reusable custom template. Used wherever a
-   design can be customized (Generate, Students, Settings) so the saved
-   template becomes selectable in every template picker, including the
-   student/Tutor LMS bulk generation. */
+   design can be customized (Generate, Settings) so the saved template becomes
+   selectable in every template picker, including bulk generation. */
 export default function SaveTemplateButton({
   design,
   defaultName = '',
@@ -95,7 +94,7 @@ export default function SaveTemplateButton({
             </select>
           </div>
           <p className="hint" style={{ marginTop: 12, marginBottom: 0 }}>
-            The template appears in the design template list on Generate, Bulk Generate and Students.
+            The template appears in the design template list on Generate and Bulk Generate.
           </p>
         </Modal>
       )}

@@ -12,13 +12,14 @@ Admins can pick from professional certificate templates, customize their design,
 - **Live design editor** — change composition, border style, colors, fonts, watermark and
   opacity with an instant preview. Save your own custom templates.
 - **Single generation** — fill in one recipient, preview, then export or save.
-- **Bulk generation** — upload a CSV (or add recipients manually) and generate an entire cohort
-  at once, then download everything as one combined PDF.
+- **Bulk generation** — add recipients from three tabs: **Manual**, **CSV upload**, and
+  **Fetch Tutor LMS students**. Select a template, then generate an entire cohort at once
+  and download everything as one combined PDF.
 - **Tutor LMS student import** — in Organization settings, enter your WordPress domain and
   administrator credentials (username + Application Password). Students are pulled from
-  `/wp-json/custom-tutor/v1/enrolled-students` (Basic auth, paginated automatically). The
-  Students page lists the enrollments, filters by course or completion, and generates their
-  certificates in bulk — with manual recipients for anyone who is not in the list.
+  `/wp-json/custom-tutor/v1/enrolled-students` (Basic auth, paginated automatically) on the
+  Bulk Generate page. Filter by course or completion, then generate certificates for the
+  selected enrollments.
 - **Custom signature & logo** — upload a signature image (and logo) in Organization settings;
   a typed script signature is used as a fallback.
 - **Exports** — high-resolution **PDF**, **PNG** and **JPEG** generated in the browser.
@@ -87,7 +88,7 @@ src/
     ui.jsx, icons.jsx   # shared UI primitives
   context/              # AuthContext, DataContext
   lib/                  # supabase client, data layer, templates, tutorLms, export helpers
-  pages/                # Login, Dashboard, Templates, Generate, BulkGenerate, Students, Certificates, Settings
+  pages/                # Login, Dashboard, Templates, Generate, BulkGenerate, Certificates, Settings
   styles/global.css     # admin UI theme
 supabase/schema.sql     # database schema + policies
 ```
