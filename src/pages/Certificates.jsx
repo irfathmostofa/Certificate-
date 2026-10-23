@@ -117,6 +117,26 @@ export default function Certificates() {
 
   const allFilteredChecked = filtered.length > 0 && filtered.every((c) => checked.has(c.id))
 
+  const resolveRecipientEmail = (cert) => {
+    const own = String(cert?.recipientEmail || '').trim()
+    if (isValidEmail(own)) return own
+    const name = String(cert?.recipientName || '').trim().toLowerCase()
+    if (!name) return own
+    const match = certificates.find(
+      (c) =>
+        c.id !== cert?.id &&
+        String(c.recipientName || '').trim().toLowerCase() === name &&
+        isValidEmail(c.recipientEmail)
+    )
+    return match ? String(match.recipientEmail).trim() : own
+  }
+
+  const withAutoContact = (cert) => ({
+    ...cert,
+    recipientName: String(cert?.recipientName || '').trim(),
+    recipientEmail: resolveRecipientEmail(cert)
+  })
+
   const deleteSelected = async () => {
     if (!checkedCerts.length) return
     const label =
@@ -133,7 +153,7 @@ export default function Certificates() {
   }
 
   const openSend = (certs) => {
-    const list = Array.isArray(certs) ? certs : [certs]
+    const list = (Array.isArray(certs) ? certs : [certs]).map(withAutoContact)
     if (!list.length) return
     setSendQueue(list)
     setSendEmail(list.length === 1 ? list[0].recipientEmail || '' : '')
@@ -467,18 +487,25 @@ export default function Certificates() {
           {sendMsg && <div className={`alert ${sendMsg.type}`}>{sendMsg.text}</div>}
           {sendQueue.length === 1 ? (
             <>
-              <div className="field">
-                <label>Student email</label>
-                <input
-                  className="input"
-                  type="email"
-                  value={sendEmail}
-                  onChange={(e) => setSendEmail(e.target.value)}
-                  placeholder="student@example.com"
-                />
+              <div className="grid grid-2" style={{ gap: 12 }}>
+                <div className="field">
+                  <label>Student name</label>
+                  <input className="input" value={sendQueue[0].recipientName} readOnly />
+                </div>
+                <div className="field">
+                  <label>Student email</label>
+                  <input
+                    className="input"
+                    type="email"
+                    value={sendEmail}
+                    readOnly={isValidEmail(sendQueue[0].recipientEmail)}
+                    onChange={(e) => setSendEmail(e.target.value)}
+                    placeholder="student@example.com"
+                  />
+                </div>
               </div>
               <p className="hint" style={{ marginBottom: 0 }}>
-                Sends a link to view and verify this certificate:{' '}
+                Name and email are taken from the student record. Sends:{' '}
                 <code>{buildPublicUrl(sendQueue[0])}</code>
               </p>
             </>
