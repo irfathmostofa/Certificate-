@@ -66,6 +66,8 @@ least 4 characters) to explore the app.
 4. Run the SQL in `supabase/schema.sql` via **SQL Editor → New query**. It creates the
    `settings`, `templates` and `certificates` tables, row-level security policies, and the
    `certify-assets` storage bucket for logos and signatures.
+   If the database already exists, run `supabase/migrations/20261023_add_recipient_email.sql`
+   to add student email support.
 5. Create an admin user in **Authentication → Users** and sign in with it.
 
 > The anon key is safe to expose in the frontend. All tables are protected by row-level

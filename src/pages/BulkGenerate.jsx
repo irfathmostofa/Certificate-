@@ -6,7 +6,7 @@ import Certificate from '../components/certificate/Certificate.jsx'
 import CertificatePreview from '../components/certificate/CertificatePreview.jsx'
 import TemplateSelect from '../components/TemplateSelect.jsx'
 import { EmptyState, Modal, ShareLink } from '../components/ui.jsx'
-import { fetchTutorStudents, isCompleted } from '../lib/tutorLms.js'
+import { fetchTutorStudents, isCompleted, readCachedStudents, writeCachedStudents, formatFetchedAt } from '../lib/tutorLms.js'
 import { buildPublicUrl } from '../lib/certUtils.js'
 import { makeCertificateId, makePublicToken, previewCertificateId, todayLong } from '../lib/data.js'
 import { resolveCopy } from '../lib/templates.js'
@@ -78,6 +78,7 @@ export default function BulkGenerate() {
   const [selected, setSelected] = useState(() => new Set())
   const [loading, setLoading] = useState(false)
   const [meta, setMeta] = useState(null)
+  const [fromCache, setFromCache] = useState(false)
   const [search, setSearch] = useState('')
   const [courseFilter, setCourseFilter] = useState('all')
   const [onlyCompleted, setOnlyCompleted] = useState(false)
@@ -97,6 +98,15 @@ export default function BulkGenerate() {
   useEffect(() => {
     if (!templateId && templates[0]) setTemplateId(templates[0].id)
   }, [templates, templateId])
+
+  useEffect(() => {
+    if (!configured || !integration) return
+    const cached = readCachedStudents(integration)
+    if (!cached) return
+    setStudents(cached.students)
+    setMeta({ pages: cached.pages, url: cached.url, fetchedAt: cached.fetchedAt })
+    setFromCache(true)
+  }, [configured, integration])
 
   const template = findTemplate(templateId) || templates[0]
   const templateCopy = resolveCopy(template?.design)
@@ -196,19 +206,37 @@ export default function BulkGenerate() {
     URL.revokeObjectURL(url)
   }
 
-  const load = async () => {
+  const load = async ({ force = false } = {}) => {
+    if (!force) {
+      const cached = readCachedStudents(integration)
+      if (cached?.students?.length) {
+        setStudents(cached.students)
+        setMeta({ pages: cached.pages, url: cached.url, fetchedAt: cached.fetchedAt })
+        setFromCache(true)
+        setMsg({
+          type: 'success',
+          text: `Using ${cached.students.length} cached student${cached.students.length === 1 ? '' : 's'}${
+            cached.fetchedAt ? ` from ${formatFetchedAt(cached.fetchedAt)}` : ''
+          }. Fetch again if new students are available.`
+        })
+        return
+      }
+    }
     setLoading(true)
     setMsg(null)
     try {
       const { students: list, pages, url } = await fetchTutorStudents(integration)
+      const fetchedAt = new Date().toISOString()
+      writeCachedStudents(integration, { students: list, pages, url, fetchedAt, total: list.length })
       setStudents(list)
       setSelected(new Set())
-      setMeta({ pages, url })
+      setMeta({ pages, url, fetchedAt })
+      setFromCache(false)
       setMsg({
         type: 'success',
-        text: `Loaded ${list.length} enrollment${list.length === 1 ? '' : 's'}${
+        text: `Fetched ${list.length} enrollment${list.length === 1 ? '' : 's'}${
           pages > 1 ? ` across ${pages} pages` : ''
-        } from Tutor LMS.`
+        } from Tutor LMS. Cached for next time.`
       })
     } catch (e) {
       setMsg({ type: 'error', text: e.message || 'Could not load students.' })
@@ -504,21 +532,23 @@ export default function BulkGenerate() {
           {tab === 'tutor' && configured && (
             <>
               <p className="muted small" style={{ marginTop: 0 }}>
-                Fetch enrolled students from your connected WordPress site, then generate certificates
-                for the ones you select.
+                Students are fetched once and kept in cache. Fetch again only when new students are
+                available.
               </p>
               <div className="row" style={{ gap: 10, flexWrap: 'wrap', marginBottom: 12 }}>
-                <button className="btn btn-primary" onClick={load} disabled={loading}>
+                <button
+                  className="btn btn-primary"
+                  onClick={() => load({ force: students.length > 0 })}
+                  disabled={loading}
+                >
                   <IconRefresh />{' '}
-                  {loading ? 'Fetching…' : students.length ? 'Refresh students' : 'Fetch students'}
+                  {loading ? 'Fetching…' : students.length ? 'Fetch new students' : 'Fetch students'}
                 </button>
                 <span className={`badge ${students.length ? 'green' : 'gray'}`}>
-                  {students.length} loaded
+                  {students.length} loaded{fromCache ? ' · cached' : ''}
                 </span>
-                {meta?.url && (
-                  <span className="hint" style={{ wordBreak: 'break-all' }}>
-                    {meta.url}
-                  </span>
+                {meta?.fetchedAt && (
+                  <span className="hint">Last fetched {formatFetchedAt(meta.fetchedAt)}</span>
                 )}
               </div>
 

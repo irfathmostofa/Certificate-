@@ -13,6 +13,8 @@
 /* credentials — everything else has sensible defaults.                */
 /* ------------------------------------------------------------------ */
 
+import { local } from './storage.js'
+
 export const DEFAULT_ENDPOINT_PATH = 'custom-tutor/v1/enrolled-students'
 
 export const DEFAULT_INTEGRATION = {
@@ -76,6 +78,41 @@ export function buildStudentsUrl(cfg = {}, page) {
   if (page) url.searchParams.set('page', String(page))
   if (cfg.courseId) url.searchParams.set('course_id', String(cfg.courseId))
   return url.toString()
+}
+
+const STUDENTS_CACHE_KEY = 'tutor-students-cache'
+
+function cacheKeyFor(cfg = {}) {
+  return [
+    normalizeBaseUrl(cfg.baseUrl),
+    String(cfg.studentsPath || DEFAULT_ENDPOINT_PATH),
+    String(cfg.courseId || ''),
+    String(cfg.perPage || '')
+  ].join('|')
+}
+
+export function readCachedStudents(cfg = {}) {
+  const stored = local.get(STUDENTS_CACHE_KEY)
+  if (!stored || stored.key !== cacheKeyFor(cfg) || !Array.isArray(stored.students)) return null
+  return stored
+}
+
+export function writeCachedStudents(cfg = {}, payload) {
+  local.set(STUDENTS_CACHE_KEY, {
+    key: cacheKeyFor(cfg),
+    students: payload.students || [],
+    total: payload.total ?? (payload.students || []).length,
+    pages: payload.pages || 1,
+    url: payload.url || '',
+    fetchedAt: payload.fetchedAt || new Date().toISOString()
+  })
+}
+
+export function formatFetchedAt(iso) {
+  if (!iso) return ''
+  const d = new Date(iso)
+  if (Number.isNaN(d.getTime())) return ''
+  return d.toLocaleString()
 }
 
 /* Base64 that survives non-Latin usernames / passwords. */

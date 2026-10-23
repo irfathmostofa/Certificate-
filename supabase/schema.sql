@@ -56,6 +56,9 @@ create index if not exists certificates_created_at_idx
 create index if not exists certificates_recipient_idx
   on public.certificates (lower(recipient_name));
 
+create index if not exists certificates_recipient_email_idx
+  on public.certificates (lower(recipient_email));
+
 -- ---------------------------------------------------------------------------
 -- Row level security
 -- Only authenticated users (admins) can read/write.
