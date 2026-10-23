@@ -14,13 +14,15 @@ export default function Certificates() {
   const [query, setQuery] = useState('')
   const [templateFilter, setTemplateFilter] = useState('All')
   const [selected, setSelected] = useState(null)
+  const [checked, setChecked] = useState(() => new Set())
   const [exporting, setExporting] = useState('')
   const [copiedId, setCopiedId] = useState(null)
   const [pending, setPending] = useState(null)
-  const [sendTarget, setSendTarget] = useState(null)
+  const [sendQueue, setSendQueue] = useState(null)
   const [sendEmail, setSendEmail] = useState('')
   const [sending, setSending] = useState(false)
   const [sendMsg, setSendMsg] = useState(null)
+  const [sendProgress, setSendProgress] = useState(null)
   const exportRef = useRef(null)
   const rowExportRef = useRef(null)
   const emailReady = isEmailjsConfigured(settings?.emailjs)
@@ -82,29 +84,116 @@ export default function Certificates() {
   const del = async (cert) => {
     if (!window.confirm(`Delete certificate for "${cert.recipientName}"?`)) return
     await removeCertificate(cert.id)
+    setChecked((prev) => {
+      const next = new Set(prev)
+      next.delete(cert.id)
+      return next
+    })
     if (selected?.id === cert.id) setSelected(null)
   }
 
-  const openSend = (cert) => {
-    setSendTarget(cert)
-    setSendEmail(cert.recipientEmail || '')
+  const toggle = (id) => {
+    setChecked((prev) => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }
+
+  const selectAllFiltered = () =>
+    setChecked((prev) => {
+      const next = new Set(prev)
+      filtered.forEach((c) => next.add(c.id))
+      return next
+    })
+
+  const clearChecked = () => setChecked(new Set())
+
+  const checkedCerts = useMemo(
+    () => certificates.filter((c) => checked.has(c.id)),
+    [certificates, checked]
+  )
+
+  const allFilteredChecked = filtered.length > 0 && filtered.every((c) => checked.has(c.id))
+
+  const deleteSelected = async () => {
+    if (!checkedCerts.length) return
+    const label =
+      checkedCerts.length === 1
+        ? `Delete certificate for "${checkedCerts[0].recipientName}"?`
+        : `Delete ${checkedCerts.length} selected certificates?`
+    if (!window.confirm(label)) return
+    const ids = checkedCerts.map((c) => c.id)
+    for (const id of ids) {
+      await removeCertificate(id)
+    }
+    if (selected && ids.includes(selected.id)) setSelected(null)
+    clearChecked()
+  }
+
+  const openSend = (certs) => {
+    const list = Array.isArray(certs) ? certs : [certs]
+    if (!list.length) return
+    setSendQueue(list)
+    setSendEmail(list.length === 1 ? list[0].recipientEmail || '' : '')
     setSendMsg(null)
+    setSendProgress(null)
+  }
+
+  const closeSend = () => {
+    if (sending) return
+    setSendQueue(null)
+    setSendProgress(null)
   }
 
   const sendToStudent = async () => {
-    if (!sendTarget) return
+    if (!sendQueue?.length) return
     setSending(true)
     setSendMsg(null)
+    const jobs =
+      sendQueue.length === 1
+        ? [{ ...sendQueue[0], recipientEmail: sendEmail }]
+        : sendQueue
+    let sent = 0
+    let skipped = 0
+    const errors = []
+    setSendProgress({ done: 0, total: jobs.length })
     try {
-      await sendCertificateEmail({
-        config: settings?.emailjs,
-        certificate: { ...sendTarget, recipientEmail: sendEmail },
-        organization: resolveOrganization(sendTarget, settings),
-        publicUrl: buildPublicUrl(sendTarget)
-      })
-      setSendMsg({ type: 'success', text: `Certificate sent to ${sendEmail.trim()}.` })
-    } catch (e) {
-      setSendMsg({ type: 'error', text: e.message || 'Could not send email.' })
+      for (let i = 0; i < jobs.length; i++) {
+        const cert = jobs[i]
+        const email = String(cert.recipientEmail || '').trim()
+        if (!isValidEmail(email)) {
+          skipped += 1
+          setSendProgress({ done: i + 1, total: jobs.length })
+          continue
+        }
+        try {
+          await sendCertificateEmail({
+            config: settings?.emailjs,
+            certificate: { ...cert, recipientEmail: email },
+            organization: resolveOrganization(cert, settings),
+            publicUrl: buildPublicUrl(cert)
+          })
+          sent += 1
+        } catch (e) {
+          errors.push(`${cert.recipientName}: ${e.message || 'Failed'}`)
+        }
+        setSendProgress({ done: i + 1, total: jobs.length })
+      }
+      if (errors.length && !sent) {
+        setSendMsg({ type: 'error', text: errors[0] })
+      } else {
+        const parts = []
+        if (sent) parts.push(`Sent ${sent}`)
+        if (skipped) parts.push(`skipped ${skipped} without a valid email`)
+        if (errors.length) parts.push(`${errors.length} failed`)
+        setSendMsg({
+          type: errors.length ? 'error' : 'success',
+          text: `${parts.join(', ')}.`
+        })
+        if (sent && sendQueue.length > 1) clearChecked()
+      }
     } finally {
       setSending(false)
     }
@@ -149,6 +238,29 @@ export default function Certificates() {
         </select>
       </div>
 
+      {checkedCerts.length > 0 && (
+        <div className="card card-pad bulk-bar">
+          <div className="muted" style={{ fontWeight: 600 }}>
+            {checkedCerts.length} selected
+          </div>
+          <div className="row" style={{ gap: 8, flexWrap: 'wrap' }}>
+            <button className="btn btn-ghost btn-sm" onClick={clearChecked}>
+              Clear
+            </button>
+            <button
+              className="btn btn-ghost btn-sm"
+              onClick={() => openSend(checkedCerts)}
+              title={emailReady ? 'Email selected certificates' : 'Configure EmailJS in Organization settings'}
+            >
+              <IconMail width={15} height={15} /> Send
+            </button>
+            <button className="btn btn-danger btn-sm" onClick={deleteSelected}>
+              <IconTrash width={15} height={15} /> Delete
+            </button>
+          </div>
+        </div>
+      )}
+
       <div className="card">
         {filtered.length === 0 ? (
           <EmptyState
@@ -164,6 +276,14 @@ export default function Certificates() {
             <table className="table">
               <thead>
                 <tr>
+                  <th style={{ width: 42 }}>
+                    <input
+                      type="checkbox"
+                      aria-label="Select all shown"
+                      checked={allFilteredChecked}
+                      onChange={(e) => (e.target.checked ? selectAllFiltered() : clearChecked())}
+                    />
+                  </th>
                   <th style={{ width: 210 }}>Certificate</th>
                   <th>Recipient</th>
                   <th>Course</th>
@@ -175,8 +295,17 @@ export default function Certificates() {
               <tbody>
                 {filtered.map((cert) => {
                   const design = resolveDesign(cert, templates, settings)
+                  const isChecked = checked.has(cert.id)
                   return (
-                    <tr key={cert.id}>
+                    <tr key={cert.id} className={isChecked ? 'row-selected' : ''}>
+                      <td>
+                        <input
+                          type="checkbox"
+                          aria-label={`Select ${cert.recipientName}`}
+                          checked={isChecked}
+                          onChange={() => toggle(cert.id)}
+                        />
+                      </td>
                       <td>
                         <div style={{ width: 200 }}>
                           <CertificatePreview maxWidth={200}>
@@ -232,7 +361,7 @@ export default function Certificates() {
                           <button
                             className="icon-btn"
                             title={emailReady ? 'Email certificate' : 'Configure EmailJS in Organization settings'}
-                            onClick={() => openSend(cert)}
+                            onClick={() => openSend([cert])}
                           >
                             <IconMail />
                           </button>
@@ -286,7 +415,7 @@ export default function Certificates() {
           <div style={{ marginTop: 16, borderTop: '1px solid var(--line)', paddingTop: 16 }}>
             <ShareLink url={buildPublicUrl(selected)} label="Shareable public link" />
             <div className="row" style={{ gap: 8, marginTop: 12 }}>
-              <button className="btn btn-ghost btn-sm" onClick={() => openSend(selected)}>
+              <button className="btn btn-ghost btn-sm" onClick={() => openSend([selected])}>
                 <IconMail width={15} height={15} /> Email to student
               </button>
             </div>
@@ -294,23 +423,36 @@ export default function Certificates() {
         </Modal>
       )}
 
-      {sendTarget && (
+      {sendQueue && (
         <Modal
-          title={`Email certificate — ${sendTarget.recipientName}`}
-          onClose={() => {
-            if (!sending) setSendTarget(null)
-          }}
+          title={
+            sendQueue.length === 1
+              ? `Email certificate — ${sendQueue[0].recipientName}`
+              : `Email ${sendQueue.length} certificates`
+          }
+          onClose={closeSend}
           footer={
             <>
-              <button className="btn btn-ghost" onClick={() => setSendTarget(null)} disabled={sending}>
-                Cancel
+              <button className="btn btn-ghost" onClick={closeSend} disabled={sending}>
+                {sendMsg?.type === 'success' ? 'Close' : 'Cancel'}
               </button>
               <button
                 className="btn btn-primary"
                 onClick={sendToStudent}
-                disabled={sending || !emailReady || !isValidEmail(sendEmail)}
+                disabled={
+                  sending ||
+                  !emailReady ||
+                  (sendQueue.length === 1 && !isValidEmail(sendEmail))
+                }
               >
-                <IconMail /> {sending ? 'Sending…' : 'Send certificate'}
+                <IconMail />{' '}
+                {sending
+                  ? sendProgress
+                    ? `Sending ${sendProgress.done}/${sendProgress.total}…`
+                    : 'Sending…'
+                  : sendQueue.length === 1
+                    ? 'Send certificate'
+                    : `Send ${sendQueue.length}`}
               </button>
             </>
           }
@@ -323,20 +465,53 @@ export default function Certificates() {
             </div>
           )}
           {sendMsg && <div className={`alert ${sendMsg.type}`}>{sendMsg.text}</div>}
-          <div className="field">
-            <label>Student email</label>
-            <input
-              className="input"
-              type="email"
-              value={sendEmail}
-              onChange={(e) => setSendEmail(e.target.value)}
-              placeholder="student@example.com"
-            />
-          </div>
-          <p className="hint" style={{ marginBottom: 0 }}>
-            Sends a link to view and verify this certificate:{' '}
-            <code>{buildPublicUrl(sendTarget)}</code>
-          </p>
+          {sendQueue.length === 1 ? (
+            <>
+              <div className="field">
+                <label>Student email</label>
+                <input
+                  className="input"
+                  type="email"
+                  value={sendEmail}
+                  onChange={(e) => setSendEmail(e.target.value)}
+                  placeholder="student@example.com"
+                />
+              </div>
+              <p className="hint" style={{ marginBottom: 0 }}>
+                Sends a link to view and verify this certificate:{' '}
+                <code>{buildPublicUrl(sendQueue[0])}</code>
+              </p>
+            </>
+          ) : (
+            <>
+              <p className="muted small" style={{ marginTop: 0 }}>
+                Each student is emailed the public certificate link. Recipients without a valid email
+                are skipped.
+              </p>
+              <div className="table-scroll">
+                <table className="table">
+                  <thead>
+                    <tr>
+                      <th>Recipient</th>
+                      <th>Email</th>
+                      <th>Course</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {sendQueue.map((cert) => (
+                      <tr key={cert.id}>
+                        <td style={{ fontWeight: 600 }}>{cert.recipientName}</td>
+                        <td className={isValidEmail(cert.recipientEmail) ? 'muted' : 'danger-text'}>
+                          {cert.recipientEmail || 'Missing email'}
+                        </td>
+                        <td className="muted">{cert.courseTitle}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </>
+          )}
         </Modal>
       )}
 

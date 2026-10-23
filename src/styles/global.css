@@ -834,6 +834,19 @@ input[type='radio'] {
   background: #f0f5ff;
 }
 
+.bulk-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.danger-text {
+  color: var(--danger);
+  font-weight: 600;
+}
+
 /* ---------------------- Toolbar / inline controls ---------------------- */
 .table-toolbar {
   display: flex;
@@ -1145,8 +1158,22 @@ code {
   border-bottom-color: var(--gold);
 }
 
+.settings-page {
+  display: grid;
+  gap: 16px;
+  max-width: 920px;
+}
+
+.settings-card {
+  overflow: hidden;
+}
+
 .settings-tabs {
-  margin-top: -4px;
+  margin: 0;
+  padding: 10px 12px 0;
+  flex-wrap: wrap;
+  overflow: visible;
+  gap: 2px 0;
 }
 
 .settings-tabs .tab {
@@ -1157,10 +1184,27 @@ code {
   border: none;
   border-bottom: 2px solid transparent;
   font-family: inherit;
+  padding: 10px 12px;
 }
 
 .settings-tabs .tab svg {
   flex-shrink: 0;
+}
+
+.settings-body {
+  padding: 20px 22px 8px;
+}
+
+.settings-save {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 14px 22px 18px;
+  border-top: 1px solid var(--line);
+  background: #fff;
+  position: sticky;
+  bottom: 0;
 }
 
 .emailjs-vars {
@@ -1657,6 +1701,22 @@ code {
   }
   .switch-row {
     align-items: flex-start;
+  }
+  .settings-tabs {
+    padding: 8px 8px 0;
+  }
+  .settings-tabs .tab {
+    flex: 1 1 auto;
+    justify-content: center;
+    min-width: calc(50% - 4px);
+    padding: 9px 8px;
+    font-size: 12.5px;
+    white-space: nowrap;
+  }
+  .settings-body,
+  .settings-save {
+    padding-left: 16px;
+    padding-right: 16px;
   }
   .tpl-meta h3 {
     font-size: 15px;

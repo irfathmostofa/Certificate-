@@ -19,7 +19,8 @@ import {
   IconBuilding,
   IconCertificate,
   IconUsers,
-  IconTemplate
+  IconTemplate,
+  IconEye
 } from '../components/icons.jsx'
 
 const TABS = [
@@ -28,7 +29,8 @@ const TABS = [
   { id: 'signature', label: 'Signature', icon: IconCheck },
   { id: 'students', label: 'Students API', icon: IconUsers },
   { id: 'email', label: 'EmailJS', icon: IconMail },
-  { id: 'design', label: 'Default design', icon: IconTemplate }
+  { id: 'design', label: 'Default design', icon: IconTemplate },
+  { id: 'preview', label: 'Preview', icon: IconEye }
 ]
 
 export default function Settings() {
@@ -110,35 +112,38 @@ export default function Settings() {
   const emailReady = isEmailjsConfigured(value.emailjs)
 
   return (
-    <div className="editor-layout">
-      <div className="grid" style={{ gap: 20 }}>
-        {msg && <div className={`alert ${msg.type}`}>{msg.text}</div>}
+    <div className="settings-page">
+      {msg && <div className={`alert ${msg.type}`}>{msg.text}</div>}
 
-        {!isSupabaseConfigured && (
-          <div className="alert info">
-            Demo mode: data is stored in your browser. To use Supabase, copy{' '}
-            <code>.env.example</code> to <code>.env</code>, add your project URL and anon key, then
-            run the SQL in <code>supabase/schema.sql</code>.
-          </div>
-        )}
+      {!isSupabaseConfigured && (
+        <div className="alert info">
+          Demo mode: data is stored in your browser. To use Supabase, copy{' '}
+          <code>.env.example</code> to <code>.env</code>, add your project URL and anon key, then
+          run the SQL in <code>supabase/schema.sql</code>.
+        </div>
+      )}
 
-        <div className="card card-pad">
-          <div className="tabs settings-tabs">
-            {TABS.map((t) => {
-              const Icon = t.icon
-              return (
-                <button
-                  key={t.id}
-                  type="button"
-                  className={`tab${tab === t.id ? ' active' : ''}`}
-                  onClick={() => setTab(t.id)}
-                >
-                  <Icon width={15} height={15} />
-                  {t.label}
-                </button>
-              )
-            })}
-          </div>
+      <div className="card settings-card">
+        <div className="tabs settings-tabs" role="tablist">
+          {TABS.map((t) => {
+            const Icon = t.icon
+            return (
+              <button
+                key={t.id}
+                type="button"
+                role="tab"
+                aria-selected={tab === t.id}
+                className={`tab${tab === t.id ? ' active' : ''}`}
+                onClick={() => setTab(t.id)}
+              >
+                <Icon width={15} height={15} />
+                <span>{t.label}</span>
+              </button>
+            )
+          })}
+        </div>
+
+        <div className="settings-body">
 
           {tab === 'organization' && (
             <>
@@ -583,34 +588,36 @@ export default function Settings() {
               </div>
             </>
           )}
-        </div>
-      </div>
 
-      <div className="preview-panel">
-        <div className="card card-pad" style={{ marginBottom: 16 }}>
-          <div className="row-between" style={{ marginBottom: 12 }}>
-            <h3 style={{ margin: 0 }}>Brand preview</h3>
-          </div>
-          <div className="preview-frame">
-            <CertificatePreview>
-              <Certificate
-                certificate={{
-                  ...SAMPLE_CERT,
-                  certificateId: `${sanitizeCertificatePrefix(value.certificatePrefix)}-2026-0A1B2C`,
-                  publicToken: `${sanitizeCertificatePrefix(value.certificatePrefix)}-PREV-SAMPLE01`
-                }}
-                design={value.defaultDesign}
-                organization={value.organization}
-                signature={value.signature}
-              />
-            </CertificatePreview>
-          </div>
+          {tab === 'preview' && (
+            <>
+              <h3 style={{ marginTop: 0 }}>Brand preview</h3>
+              <p className="muted small" style={{ marginTop: 0 }}>
+                Live preview of your organization, signature and default design.
+              </p>
+              <div className="preview-frame">
+                <CertificatePreview>
+                  <Certificate
+                    certificate={{
+                      ...SAMPLE_CERT,
+                      certificateId: `${sanitizeCertificatePrefix(value.certificatePrefix)}-2026-0A1B2C`,
+                      publicToken: `${sanitizeCertificatePrefix(value.certificatePrefix)}-PREV-SAMPLE01`
+                    }}
+                    design={value.defaultDesign}
+                    organization={value.organization}
+                    signature={value.signature}
+                  />
+                </CertificatePreview>
+              </div>
+            </>
+          )}
         </div>
-        <div className="card card-pad">
-          <button className="btn btn-primary btn-block" onClick={save} disabled={saving || !draft}>
+
+        <div className="settings-save">
+          <button className="btn btn-primary" onClick={save} disabled={saving || !draft}>
             <IconCheck /> {saving ? 'Saving…' : 'Save changes'}
           </button>
-          {!draft && <div className="hint" style={{ textAlign: 'center', marginTop: 10 }}>No unsaved changes.</div>}
+          {!draft && <span className="hint">No unsaved changes.</span>}
         </div>
       </div>
     </div>
