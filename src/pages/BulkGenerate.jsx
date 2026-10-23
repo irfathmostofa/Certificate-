@@ -249,6 +249,7 @@ export default function BulkGenerate() {
     try {
       const items = queue.map((r) => ({
         recipientName: r.recipientName,
+        recipientEmail: r.email || '',
         courseTitle: r.courseTitle || 'Course Title',
         description: templateCopy.description,
         eyebrow: templateCopy.eyebrow,

@@ -2,6 +2,7 @@ import { supabase, isSupabaseConfigured, SIGNATURE_BUCKET } from './supabase.js'
 import { local, uid } from './storage.js'
 import { TEMPLATE_PRESETS, blankDesign, resolveCopy } from './templates.js'
 import { DEFAULT_INTEGRATION } from './tutorLms.js'
+import { DEFAULT_EMAILJS } from './emailjs.js'
 
 const SETTINGS_KEY = 'settings'
 const TEMPLATES_KEY = 'templates'
@@ -24,7 +25,8 @@ export const DEFAULT_SETTINGS = {
   },
   certificatePrefix: DEFAULT_CERTIFICATE_PREFIX,
   defaultDesign: blankDesign(),
-  integration: { ...DEFAULT_INTEGRATION }
+  integration: { ...DEFAULT_INTEGRATION },
+  emailjs: { ...DEFAULT_EMAILJS }
 }
 
 export function sanitizeCertificatePrefix(value) {
@@ -59,18 +61,21 @@ function seedDemo() {
   const samples = [
     {
       recipientName: 'Amelia Richardson',
+      recipientEmail: 'amelia@example.com',
       courseTitle: 'Advanced Data Analytics',
       description: 'Awarded in recognition of the successful completion of all program requirements.',
       templateId: 'royal-gold'
     },
     {
       recipientName: 'Marcus Chen',
+      recipientEmail: 'marcus@example.com',
       courseTitle: 'Full-Stack Web Development',
       description: 'Completed 120 hours of intensive training with distinction.',
       templateId: 'modern-graphite'
     },
     {
       recipientName: 'Sofia Alvarez',
+      recipientEmail: 'sofia@example.com',
       courseTitle: 'Project Management Professional',
       description: 'Demonstrated mastery of agile delivery and stakeholder management.',
       templateId: 'emerald-classic'
@@ -122,6 +127,7 @@ function normalizeSettings(stored) {
     organization: { ...DEFAULT_SETTINGS.organization, ...(saved.organization || {}) },
     signature: { ...DEFAULT_SETTINGS.signature, ...(saved.signature || {}) },
     integration: { ...DEFAULT_INTEGRATION, ...(saved.integration || {}) },
+    emailjs: { ...DEFAULT_EMAILJS, ...(saved.emailjs || {}) },
     certificatePrefix: sanitizeCertificatePrefix(
       saved.certificatePrefix ?? DEFAULT_SETTINGS.certificatePrefix
     )
@@ -255,6 +261,7 @@ export async function createCertificates(items) {
       certificate_id: it.certificateId,
       public_token: it.publicToken || makePublicToken(it.certificatePrefix),
       recipient_name: it.recipientName,
+      recipient_email: it.recipientEmail || it.email || '',
       course_title: it.courseTitle,
       description: it.description || copy.description || '',
       template_id: it.templateId,
@@ -313,6 +320,7 @@ function rowToCert(row) {
     certificateId: row.certificate_id,
     publicToken: row.public_token,
     recipientName: row.recipient_name,
+    recipientEmail: row.recipient_email || row.recipientEmail || '',
     courseTitle: row.course_title,
     description: row.description,
     templateId: row.template_id,

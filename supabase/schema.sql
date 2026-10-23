@@ -31,6 +31,7 @@ create table if not exists public.certificates (
   certificate_id text unique not null,
   public_token text unique,
   recipient_name text not null,
+  recipient_email text default '',
   course_title text not null,
   description text default '',
   template_id text,
@@ -46,7 +47,8 @@ create table if not exists public.certificates (
 alter table public.certificates
   add column if not exists public_token text unique,
   add column if not exists organization jsonb,
-  add column if not exists signature jsonb;
+  add column if not exists signature jsonb,
+  add column if not exists recipient_email text default '';
 
 create index if not exists certificates_created_at_idx
   on public.certificates (created_at desc);
@@ -87,6 +89,7 @@ returns table (
   certificate_id text,
   public_token text,
   recipient_name text,
+  recipient_email text,
   course_title text,
   description text,
   template_id text,
@@ -102,7 +105,7 @@ security definer
 set search_path = public
 stable
 as $$
-  select id, certificate_id, public_token, recipient_name, course_title,
+  select id, certificate_id, public_token, recipient_name, recipient_email, course_title,
          description, template_id, design, organization, signature,
          issue_date, status, created_at
   from public.certificates

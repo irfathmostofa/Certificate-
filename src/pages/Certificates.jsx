@@ -1,11 +1,13 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { useData } from '../context/DataContext.jsx'
 import Certificate from '../components/certificate/Certificate.jsx'
 import CertificatePreview from '../components/certificate/CertificatePreview.jsx'
 import { Modal, EmptyState, ShareLink } from '../components/ui.jsx'
 import { resolveDesign, resolveOrganization, resolveSignature, certFileName, buildPublicUrl, formatDate } from '../lib/certUtils.js'
 import { exportPDF, exportPNG, exportJPEG } from '../lib/export.js'
-import { IconSearch, IconTrash, IconDownload, IconEye, IconCertificate, IconLink, IconCheck } from '../components/icons.jsx'
+import { isEmailjsConfigured, isValidEmail, sendCertificateEmail } from '../lib/emailjs.js'
+import { IconSearch, IconTrash, IconDownload, IconEye, IconCertificate, IconLink, IconCheck, IconMail } from '../components/icons.jsx'
 
 export default function Certificates() {
   const { certificates, templates, settings, removeCertificate, loading } = useData()
@@ -15,8 +17,13 @@ export default function Certificates() {
   const [exporting, setExporting] = useState('')
   const [copiedId, setCopiedId] = useState(null)
   const [pending, setPending] = useState(null)
+  const [sendTarget, setSendTarget] = useState(null)
+  const [sendEmail, setSendEmail] = useState('')
+  const [sending, setSending] = useState(false)
+  const [sendMsg, setSendMsg] = useState(null)
   const exportRef = useRef(null)
   const rowExportRef = useRef(null)
+  const emailReady = isEmailjsConfigured(settings?.emailjs)
 
   // Render a single certificate off-screen on demand, then export it. This
   // keeps per-row downloads working for libraries of any size without having
@@ -78,6 +85,31 @@ export default function Certificates() {
     if (selected?.id === cert.id) setSelected(null)
   }
 
+  const openSend = (cert) => {
+    setSendTarget(cert)
+    setSendEmail(cert.recipientEmail || '')
+    setSendMsg(null)
+  }
+
+  const sendToStudent = async () => {
+    if (!sendTarget) return
+    setSending(true)
+    setSendMsg(null)
+    try {
+      await sendCertificateEmail({
+        config: settings?.emailjs,
+        certificate: { ...sendTarget, recipientEmail: sendEmail },
+        organization: resolveOrganization(sendTarget, settings),
+        publicUrl: buildPublicUrl(sendTarget)
+      })
+      setSendMsg({ type: 'success', text: `Certificate sent to ${sendEmail.trim()}.` })
+    } catch (e) {
+      setSendMsg({ type: 'error', text: e.message || 'Could not send email.' })
+    } finally {
+      setSending(false)
+    }
+  }
+
   const templateNames = [...new Set(certificates.map((c) => c.templateId))]
 
   return (
@@ -137,7 +169,7 @@ export default function Certificates() {
                   <th>Course</th>
                   <th>Template</th>
                   <th>Issued</th>
-                  <th style={{ width: 130 }}>Actions</th>
+                  <th style={{ width: 160 }}>Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -197,6 +229,13 @@ export default function Certificates() {
                           >
                             <IconDownload />
                           </button>
+                          <button
+                            className="icon-btn"
+                            title={emailReady ? 'Email certificate' : 'Configure EmailJS in Organization settings'}
+                            onClick={() => openSend(cert)}
+                          >
+                            <IconMail />
+                          </button>
                           <button className="icon-btn" title="Delete" onClick={() => del(cert)}>
                             <IconTrash />
                           </button>
@@ -246,7 +285,58 @@ export default function Certificates() {
           </div>
           <div style={{ marginTop: 16, borderTop: '1px solid var(--line)', paddingTop: 16 }}>
             <ShareLink url={buildPublicUrl(selected)} label="Shareable public link" />
+            <div className="row" style={{ gap: 8, marginTop: 12 }}>
+              <button className="btn btn-ghost btn-sm" onClick={() => openSend(selected)}>
+                <IconMail width={15} height={15} /> Email to student
+              </button>
+            </div>
           </div>
+        </Modal>
+      )}
+
+      {sendTarget && (
+        <Modal
+          title={`Email certificate — ${sendTarget.recipientName}`}
+          onClose={() => {
+            if (!sending) setSendTarget(null)
+          }}
+          footer={
+            <>
+              <button className="btn btn-ghost" onClick={() => setSendTarget(null)} disabled={sending}>
+                Cancel
+              </button>
+              <button
+                className="btn btn-primary"
+                onClick={sendToStudent}
+                disabled={sending || !emailReady || !isValidEmail(sendEmail)}
+              >
+                <IconMail /> {sending ? 'Sending…' : 'Send certificate'}
+              </button>
+            </>
+          }
+        >
+          {!emailReady && (
+            <div className="alert info">
+              EmailJS is not configured.{' '}
+              <Link to="/settings">Open Organization settings</Link> and add your public key, service
+              ID and template ID.
+            </div>
+          )}
+          {sendMsg && <div className={`alert ${sendMsg.type}`}>{sendMsg.text}</div>}
+          <div className="field">
+            <label>Student email</label>
+            <input
+              className="input"
+              type="email"
+              value={sendEmail}
+              onChange={(e) => setSendEmail(e.target.value)}
+              placeholder="student@example.com"
+            />
+          </div>
+          <p className="hint" style={{ marginBottom: 0 }}>
+            Sends a link to view and verify this certificate:{' '}
+            <code>{buildPublicUrl(sendTarget)}</code>
+          </p>
         </Modal>
       )}
 

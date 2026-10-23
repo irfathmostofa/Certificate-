@@ -88,7 +88,8 @@ export function DataProvider({ children }) {
         ...it,
         organization: it.organization || settings?.organization || null,
         signature: it.signature || settings?.signature || null,
-        certificatePrefix: it.certificatePrefix || settings?.certificatePrefix
+        certificatePrefix: it.certificatePrefix || settings?.certificatePrefix,
+        recipientEmail: it.recipientEmail || it.email || ''
       }))
       const created = await createCertificates(enriched)
       setCertificates((prev) => [...created, ...prev])

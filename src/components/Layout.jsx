@@ -29,7 +29,7 @@ const TITLES = {
   '/generate': ['Generate Certificate', 'Create a single certificate for one recipient'],
   '/bulk': ['Bulk Generation', 'Add recipients from manual entry, CSV, or Tutor LMS'],
   '/certificates': ['Certificates', 'Search, preview and export issued certificates'],
-  '/settings': ['Organization & Signature', 'Set your brand, logo and authorized signature']
+  '/settings': ['Organization', 'Brand, signature, student API and EmailJS']
 }
 
 export default function Layout({ children }) {

@@ -15,6 +15,7 @@ import { IconDownload, IconCheck, IconSparkles, IconCopy } from '../components/i
 
 const emptyForm = (prefix, copy = {}) => ({
   recipientName: '',
+  recipientEmail: '',
   courseTitle: '',
   description: copy.description || '',
   eyebrow: copy.eyebrow || '',
@@ -217,6 +218,17 @@ export default function Generate() {
               onChange={(e) => set('recipientName', e.target.value)}
               placeholder="e.g. Amelia Richardson"
             />
+          </div>
+          <div className="field">
+            <label>Student email</label>
+            <input
+              className="input"
+              type="email"
+              value={form.recipientEmail}
+              onChange={(e) => set('recipientEmail', e.target.value)}
+              placeholder="e.g. amelia@example.com"
+            />
+            <span className="hint">Used when sending the certificate with EmailJS.</span>
           </div>
           <div className="field">
             <label>Course / award title *</label>

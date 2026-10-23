@@ -168,3 +168,18 @@ export const IconEye = (p) => (
     <circle cx="12" cy="12" r="3" />
   </svg>
 )
+
+export const IconMail = (p) => (
+  <svg {...base} {...p}>
+    <rect x="3" y="5" width="18" height="14" rx="2" />
+    <path d="M3 7l9 6 9-6" />
+  </svg>
+)
+
+export const IconBuilding = (p) => (
+  <svg {...base} {...p}>
+    <path d="M4 21V5a2 2 0 012-2h8a2 2 0 012 2v16" />
+    <path d="M16 10h2a2 2 0 012 2v9" />
+    <path d="M9 21v-4h4v4M8 8h2M12 8h2M8 12h2M12 12h2" />
+  </svg>
+)
