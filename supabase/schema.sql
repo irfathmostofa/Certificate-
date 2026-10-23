@@ -86,6 +86,8 @@ create policy "certificates for authenticated" on public.certificates
 -- without being able to list or read the certificates table directly.
 -- ---------------------------------------------------------------------------
 
+drop function if exists public.get_public_certificate(text);
+
 create or replace function public.get_public_certificate(p_token text)
 returns table (
   id text,

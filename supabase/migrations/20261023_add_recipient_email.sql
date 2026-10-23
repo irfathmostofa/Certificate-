@@ -12,6 +12,8 @@ where recipient_email is null;
 create index if not exists certificates_recipient_email_idx
   on public.certificates (lower(recipient_email));
 
+drop function if exists public.get_public_certificate(text);
+
 create or replace function public.get_public_certificate(p_token text)
 returns table (
   id text,
