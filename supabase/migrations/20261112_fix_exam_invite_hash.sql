@@ -229,9 +229,9 @@ declare
   qid text;
   chosen text;
   marks numeric;
-  score numeric := 0;
+  v_score numeric := 0;
   earned numeric;
-  passed boolean;
+  v_passed boolean;
 begin
   inv := public.find_exam_invitation(p_token);
   if inv.id is null then
@@ -269,24 +269,24 @@ begin
     else
       earned := 0;
     end if;
-    score := score + earned;
+    v_score := v_score + earned;
   end loop;
 
-  passed := score >= ex.pass_marks;
+  v_passed := v_score >= ex.pass_marks;
 
   update public.exam_attempts
     set answers = coalesce(p_answers, '{}'::jsonb),
         status = 'submitted',
-        score = score,
-        passed = passed,
+        score = v_score,
+        passed = v_passed,
         submitted_at = now(),
         remaining_seconds = 0
     where id = att.id;
 
   return jsonb_build_object(
     'ok', true,
-    'score', score,
-    'passed', passed,
+    'score', v_score,
+    'passed', v_passed,
     'totalMarks', ex.total_marks,
     'passMarks', ex.pass_marks
   );
