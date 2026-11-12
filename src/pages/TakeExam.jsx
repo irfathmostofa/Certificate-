@@ -8,8 +8,7 @@ import {
   remainingSeconds as secondsUntil,
   saveExamProgress,
   startExamAttempt,
-  submitExamAttempt,
-  voidExamAttempt
+  submitExamAttempt
 } from '../lib/exams.js'
 
 const WARNINGS = [
@@ -74,38 +73,20 @@ export default function TakeExam() {
       submittingRef.current = true
       setSubmitting(true)
       setConfirmOpen(false)
+      setError('')
       try {
         const data = await submitExamAttempt(tokenRef.current, answersRef.current)
         finish('result', data)
       } catch (e) {
-        if (auto) {
-          setError(e.message || 'This examination link is no longer available.')
-          finish('unavailable')
-        } else {
-          submittingRef.current = false
-          setError(e.message || 'Could not submit the examination.')
-        }
+        submittingRef.current = false
+        const message = e.message || 'Could not submit the examination.'
+        setError(message)
+        if (auto) finish('unavailable')
       } finally {
         setSubmitting(false)
       }
     },
     [finish]
-  )
-
-  const voidAttempt = useCallback(
-    async (reason) => {
-      if (!startedRef.current || finishedRef.current || submittingRef.current) return
-      finishedRef.current = true
-      startedRef.current = false
-      try {
-        await voidExamAttempt(tokenRef.current, reason)
-      } catch {
-        /* already unavailable */
-      }
-      setPhase('unavailable')
-      setError('This examination link is no longer available because the attempt was interrupted.')
-    },
-    []
   )
 
   useEffect(() => {
@@ -163,21 +144,27 @@ export default function TakeExam() {
 
   useEffect(() => {
     if (phase !== 'exam') return
-    const onVisibility = () => {
-      if (document.hidden) voidAttempt('tab-switch')
+    const persist = () => {
+      saveExamProgress(tokenRef.current, answersRef.current, remainingRef.current).catch(() => {})
     }
-    const onPageHide = () => {
-      voidAttempt('refresh-or-leave')
+    const onHide = () => {
+      if (document.hidden) persist()
     }
-    document.addEventListener('visibilitychange', onVisibility)
-    window.addEventListener('pagehide', onPageHide)
-    window.addEventListener('beforeunload', onPageHide)
+    const onUnload = (event) => {
+      if (finishedRef.current || submittingRef.current) return
+      persist()
+      event.preventDefault()
+      event.returnValue = ''
+    }
+    document.addEventListener('visibilitychange', onHide)
+    window.addEventListener('pagehide', persist)
+    window.addEventListener('beforeunload', onUnload)
     return () => {
-      document.removeEventListener('visibilitychange', onVisibility)
-      window.removeEventListener('pagehide', onPageHide)
-      window.removeEventListener('beforeunload', onPageHide)
+      document.removeEventListener('visibilitychange', onHide)
+      window.removeEventListener('pagehide', persist)
+      window.removeEventListener('beforeunload', onUnload)
     }
-  }, [phase, voidAttempt])
+  }, [phase])
 
   const begin = async () => {
     if (!agreed || starting) return
@@ -297,9 +284,14 @@ export default function TakeExam() {
           <div className="exam-kicker">{exam?.courseTitle}</div>
           <b>{exam?.title}</b>
         </div>
-        <div className={`exam-timer${remaining <= 60 ? ' danger' : ''}`}>
-          <IconClock width={16} height={16} />
-          {formatDuration(remaining)}
+        <div className="row" style={{ gap: 8, flexWrap: 'wrap' }}>
+          <div className={`exam-timer${remaining <= 60 ? ' danger' : ''}`}>
+            <IconClock width={16} height={16} />
+            {formatDuration(remaining)}
+          </div>
+          <button className="btn btn-gold" type="button" onClick={() => setConfirmOpen(true)} disabled={submitting}>
+            {submitting ? 'Submitting…' : 'Submit'}
+          </button>
         </div>
       </header>
 
@@ -323,6 +315,7 @@ export default function TakeExam() {
         </aside>
 
         <section className="exam-main">
+          {error && <div className="alert error">{error}</div>}
           {current ? (
             <>
               <div className="muted small">
@@ -367,8 +360,11 @@ export default function TakeExam() {
       </div>
 
       <div className="exam-submit-bar">
+        <div className="muted small">
+          You can submit any time before the timer ends. Unanswered questions score 0.
+        </div>
         <button className="btn btn-gold" type="button" onClick={() => setConfirmOpen(true)} disabled={submitting}>
-          Submit examination
+          {submitting ? 'Submitting…' : 'Submit examination'}
         </button>
       </div>
 
@@ -380,7 +376,7 @@ export default function TakeExam() {
             </div>
             <div className="modal-body">
               <p>
-                You have answered {answeredCount} of {questions.length} questions. Once submitted, this invitation cannot be used again.
+                You have answered {answeredCount} of {questions.length} questions. You can submit now even if time remains. Once submitted, this invitation cannot be used again.
               </p>
             </div>
             <div className="modal-foot">

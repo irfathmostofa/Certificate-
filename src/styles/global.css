@@ -1956,8 +1956,14 @@ code {
   position: sticky;
   bottom: 0;
   display: flex;
-  justify-content: flex-end;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
   padding: 12px 22px 18px;
+  background: rgba(255, 255, 255, 0.96);
+  border-top: 1px solid var(--line);
+  z-index: 10;
 }
 
 @media (max-width: 800px) {
