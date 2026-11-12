@@ -43,8 +43,18 @@ export function blankQuestion(marks = 1) {
   }
 }
 
+export function normalizeExamToken(token) {
+  const raw = String(token || '').trim()
+  if (!raw) return ''
+  try {
+    return decodeURIComponent(raw)
+  } catch {
+    return raw
+  }
+}
+
 export async function hashToken(token) {
-  const encoded = new TextEncoder().encode(String(token || ''))
+  const encoded = new TextEncoder().encode(normalizeExamToken(token))
   const buffer = await crypto.subtle.digest('SHA-256', encoded)
   return [...new Uint8Array(buffer)].map((b) => b.toString(16).padStart(2, '0')).join('')
 }
@@ -527,6 +537,17 @@ export async function revokeInvitation(id) {
   local.set(INVITES_KEY, next)
 }
 
+export async function regenerateInvitation(invitation) {
+  const examId = invitation?.examId
+  const studentName = String(invitation?.studentName || '').trim()
+  const studentEmail = String(invitation?.studentEmail || '').trim()
+  if (!examId || !studentName) throw new Error('Invitation is missing student details.')
+  if (invitation.id && invitation.status === 'unused') {
+    await revokeInvitation(invitation.id)
+  }
+  return createInvitation(examId, { studentName, studentEmail })
+}
+
 export async function listAttempts(examId) {
   if (isSupabaseConfigured) {
     const { data, error } = await supabase
@@ -577,38 +598,59 @@ function findInvitationByHash(invitations, hash) {
   return invitations.find((item) => item.tokenHash === hash) || null
 }
 
+async function callExamRpc(name, hashArgs, tokenArgs) {
+  const first = await supabase.rpc(name, hashArgs)
+  const firstPayload = unwrapRpc(first.data)
+  if (!first.error && firstPayload?.ok) return { data: first.data, error: first.error, payload: firstPayload }
+  const retry = await supabase.rpc(name, tokenArgs)
+  const retryPayload = unwrapRpc(retry.data)
+  if (!retry.error && retryPayload) return { data: retry.data, error: retry.error, payload: retryPayload }
+  return { data: first.data, error: first.error || retry.error, payload: firstPayload || retryPayload }
+}
+
 export async function peekExamInvitation(token) {
-  if (!token) return { ok: false, error: 'invalid' }
+  const normalized = normalizeExamToken(token)
+  if (!normalized) return { ok: false, error: 'invalid' }
+  const hash = await hashToken(normalized)
   if (isSupabaseConfigured) {
-    const { data, error } = await supabase.rpc('peek_exam_invitation', { p_token: token })
-    if (error) throw error
-    return unwrapRpc(data) || { ok: false, error: 'invalid' }
+    const result = await callExamRpc(
+      'peek_exam_invitation',
+      { p_token: hash },
+      { p_token: normalized }
+    )
+    if (result.error && !result.payload) throw result.error
+    return result.payload || { ok: false, error: 'invalid' }
   }
-  const hash = await hashToken(token)
   const invitations = await demoInvitations()
   const invitation = findInvitationByHash(invitations, hash)
   if (!invitation) return { ok: false, error: 'invalid' }
   const exam = (await demoExams()).find((item) => item.id === invitation.examId)
-  const attempt = (await demoAttempts()).find((item) => item.invitationId === invitation.id)
+  const attempt = (await demoAttempts())
+    .filter((item) => item.invitationId === invitation.id)
+    .sort((a, b) => String(b.startedAt || '').localeCompare(String(a.startedAt || '')))[0]
   return {
     ok: true,
     status: invitation.status,
     studentName: invitation.studentName,
     studentEmail: invitation.studentEmail,
     exam: publicExamMeta(exam),
-    attemptStatus: attempt?.status || null
+    attemptStatus: invitation.status === 'unused' ? null : attempt?.status || null
   }
 }
 
 export async function startExamAttempt(token) {
+  const normalized = normalizeExamToken(token)
+  const hash = await hashToken(normalized)
   if (isSupabaseConfigured) {
-    const { data, error } = await supabase.rpc('start_exam_attempt', { p_token: token })
-    if (error) throw error
-    const payload = unwrapRpc(data)
-    if (!payload?.ok) throw new Error(payload?.error || 'This examination link is no longer available.')
-    return payload
+    const result = await callExamRpc(
+      'start_exam_attempt',
+      { p_token: hash },
+      { p_token: normalized }
+    )
+    if (result.error && !result.payload) throw result.error
+    if (!result.payload?.ok) throw new Error(result.payload?.error || 'This examination link is no longer available.')
+    return result.payload
   }
-  const hash = await hashToken(token)
   const invitations = await demoInvitations()
   const invitation = findInvitationByHash(invitations, hash)
   if (!invitation) throw new Error('This examination link is invalid.')
@@ -658,18 +700,19 @@ export async function startExamAttempt(token) {
 }
 
 export async function saveExamProgress(token, answers, remainingSeconds) {
+  const normalized = normalizeExamToken(token)
+  const hash = await hashToken(normalized)
   if (isSupabaseConfigured) {
-    const { data, error } = await supabase.rpc('save_exam_progress', {
-      p_token: token,
-      p_answers: answers || {},
-      p_remaining: remainingSeconds ?? null
-    })
-    if (error) throw error
-    const payload = unwrapRpc(data)
-    if (!payload?.ok) throw new Error(payload?.error || 'Could not save progress.')
-    return payload
+    const args = { p_answers: answers || {}, p_remaining: remainingSeconds ?? null }
+    const result = await callExamRpc(
+      'save_exam_progress',
+      { p_token: hash, ...args },
+      { p_token: normalized, ...args }
+    )
+    if (result.error && !result.payload) throw result.error
+    if (!result.payload?.ok) throw new Error(result.payload?.error || 'Could not save progress.')
+    return result.payload
   }
-  const hash = await hashToken(token)
   const invitation = findInvitationByHash(await demoInvitations(), hash)
   if (!invitation) throw new Error('This examination link is invalid.')
   const attempts = await demoAttempts()
@@ -685,17 +728,18 @@ export async function saveExamProgress(token, answers, remainingSeconds) {
 }
 
 export async function submitExamAttempt(token, answers) {
+  const normalized = normalizeExamToken(token)
+  const hash = await hashToken(normalized)
   if (isSupabaseConfigured) {
-    const { data, error } = await supabase.rpc('submit_exam_attempt', {
-      p_token: token,
-      p_answers: answers || {}
-    })
-    if (error) throw error
-    const payload = unwrapRpc(data)
-    if (!payload?.ok) throw new Error(payload?.error || 'Could not submit the examination.')
-    return payload
+    const result = await callExamRpc(
+      'submit_exam_attempt',
+      { p_token: hash, p_answers: answers || {} },
+      { p_token: normalized, p_answers: answers || {} }
+    )
+    if (result.error && !result.payload) throw result.error
+    if (!result.payload?.ok) throw new Error(result.payload?.error || 'Could not submit the examination.')
+    return result.payload
   }
-  const hash = await hashToken(token)
   const invitation = findInvitationByHash(await demoInvitations(), hash)
   if (!invitation) throw new Error('This examination link is invalid.')
   const attempts = await demoAttempts()
@@ -728,15 +772,17 @@ export async function submitExamAttempt(token, answers) {
 }
 
 export async function voidExamAttempt(token, reason) {
+  const normalized = normalizeExamToken(token)
+  const hash = await hashToken(normalized)
   if (isSupabaseConfigured) {
-    const { data, error } = await supabase.rpc('void_exam_attempt', {
-      p_token: token,
-      p_reason: reason || 'left-exam'
-    })
-    if (error) throw error
-    return unwrapRpc(data) || { ok: true }
+    const result = await callExamRpc(
+      'void_exam_attempt',
+      { p_token: hash, p_reason: reason || 'left-exam' },
+      { p_token: normalized, p_reason: reason || 'left-exam' }
+    )
+    if (result.error && !result.payload) throw result.error
+    return result.payload || { ok: true }
   }
-  const hash = await hashToken(token)
   const invitation = findInvitationByHash(await demoInvitations(), hash)
   if (!invitation) return { ok: false, error: 'invalid' }
   const attempts = await demoAttempts()

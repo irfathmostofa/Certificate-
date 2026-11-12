@@ -22,6 +22,7 @@ import {
   listAttempts,
   listInvitations,
   markAttemptCertificateSent,
+  regenerateInvitation,
   revokeInvitation,
   saveExamination
 } from '../lib/exams.js'
@@ -147,6 +148,7 @@ export default function ExaminationEditor() {
   const [attempts, setAttempts] = useState([])
   const [inviteForm, setInviteForm] = useState({ studentName: '', studentEmail: '', studentId: '' })
   const [generatedLink, setGeneratedLink] = useState(null)
+  const [regeneratingId, setRegeneratingId] = useState('')
   const [importOpen, setImportOpen] = useState(false)
   const [importPreview, setImportPreview] = useState(null)
   const [importBusy, setImportBusy] = useState(false)
@@ -291,6 +293,26 @@ export default function ExaminationEditor() {
       setMsg({ type: 'success', text: `One-time exam link created for ${result.invitation.studentName}.` })
     } catch (e) {
       setMsg({ type: 'error', text: e.message || 'Could not create invitation.' })
+    }
+  }
+
+  const regenerateLink = async (invitation) => {
+    if (isNew) {
+      setMsg({ type: 'error', text: 'Save the examination first, then generate a link.' })
+      return
+    }
+    if (!window.confirm(`Regenerate the exam link for ${invitation.studentName}? The previous link will stop working.`)) return
+    setRegeneratingId(invitation.id)
+    setMsg(null)
+    try {
+      const result = await regenerateInvitation(invitation)
+      setGeneratedLink(result)
+      await loadRelated(exam.id)
+      setMsg({ type: 'success', text: `New exam link created for ${result.invitation.studentName}. Copy it now.` })
+    } catch (e) {
+      setMsg({ type: 'error', text: e.message || 'Could not regenerate invitation.' })
+    } finally {
+      setRegeneratingId('')
     }
   }
 
@@ -606,7 +628,7 @@ export default function ExaminationEditor() {
             {generatedLink && (
               <div style={{ marginTop: 16 }}>
                 <ShareLink url={generatedLink.url} label={`Invitation for ${generatedLink.invitation.studentName}`} />
-                <p className="hint">Copy this link now. The raw token is not stored and cannot be retrieved later.</p>
+                <p className="hint">Copy this link now. The raw token is not stored. Use Regenerate in the list if a student needs a new one.</p>
               </div>
             )}
           </div>
@@ -642,11 +664,21 @@ export default function ExaminationEditor() {
                         </td>
                         <td className="muted">{formatDate(item.createdAt)}</td>
                         <td>
-                          {item.status === 'unused' && (
-                            <button className="btn btn-ghost btn-sm" onClick={() => revokeInvitation(item.id).then(() => loadRelated(exam.id))}>
-                              Revoke
+                          <div className="row" style={{ justifyContent: 'flex-end', gap: 6, flexWrap: 'wrap' }}>
+                            <button
+                              className="btn btn-ghost btn-sm"
+                              type="button"
+                              disabled={regeneratingId === item.id}
+                              onClick={() => regenerateLink(item)}
+                            >
+                              {regeneratingId === item.id ? 'Regenerating…' : 'Regenerate'}
                             </button>
-                          )}
+                            {item.status === 'unused' && (
+                              <button className="btn btn-ghost btn-sm" onClick={() => revokeInvitation(item.id).then(() => loadRelated(exam.id))}>
+                                Revoke
+                              </button>
+                            )}
+                          </div>
                         </td>
                       </tr>
                     ))}

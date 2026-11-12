@@ -216,25 +216,58 @@ drop policy if exists "exam attempts for authenticated" on public.exam_attempts;
 create policy "exam attempts for authenticated" on public.exam_attempts
   for all to authenticated using (true) with check (true);
 
+create or replace function public.find_exam_invitation(p_token text)
+returns public.exam_invitations
+language plpgsql
+stable
+security definer
+set search_path = public, extensions, pg_temp
+as $$
+declare
+  inv public.exam_invitations%rowtype;
+  h text;
+  t text := btrim(coalesce(p_token, ''));
+begin
+  if t = '' then
+    return inv;
+  end if;
+
+  select * into inv from public.exam_invitations where token_hash = t;
+  if found then
+    return inv;
+  end if;
+
+  begin
+    h := encode(extensions.digest(convert_to(t, 'UTF8'), 'sha256'), 'hex');
+  exception when others then
+    begin
+      h := encode(digest(convert_to(t, 'UTF8'), 'sha256'), 'hex');
+    exception when others then
+      return inv;
+    end;
+  end;
+
+  if h is not null and h <> t then
+    select * into inv from public.exam_invitations where token_hash = h;
+  end if;
+  return inv;
+end;
+$$;
+
 create or replace function public.peek_exam_invitation(p_token text)
 returns jsonb
 language plpgsql
 security definer
-set search_path = public
+set search_path = public, extensions, pg_temp
 as $$
 declare
-  h text;
   inv public.exam_invitations%rowtype;
   ex public.examinations%rowtype;
   att public.exam_attempts%rowtype;
   display_count integer;
 begin
-  if p_token is null or length(trim(p_token)) = 0 then
-    return jsonb_build_object('ok', false, 'error', 'invalid');
-  end if;
-  h := encode(digest(p_token, 'sha256'), 'hex');
-  select * into inv from public.exam_invitations where token_hash = h;
-  if not found then
+  inv := public.find_exam_invitation(p_token);
+  if inv.id is null then
     return jsonb_build_object('ok', false, 'error', 'invalid');
   end if;
   select * into ex from public.examinations where id = inv.exam_id;
@@ -251,7 +284,7 @@ begin
     'status', inv.status,
     'studentName', inv.student_name,
     'studentEmail', inv.student_email,
-    'attemptStatus', att.status,
+    'attemptStatus', case when inv.status = 'unused' then null else att.status end,
     'exam', jsonb_build_object(
       'id', ex.id,
       'title', ex.title,
@@ -272,10 +305,9 @@ create or replace function public.start_exam_attempt(p_token text)
 returns jsonb
 language plpgsql
 security definer
-set search_path = public
+set search_path = public, extensions, pg_temp
 as $$
 declare
-  h text;
   inv public.exam_invitations%rowtype;
   ex public.examinations%rowtype;
   selected jsonb := '[]'::jsonb;
@@ -285,9 +317,8 @@ declare
   ends timestamptz;
   display_count integer;
 begin
-  h := encode(digest(p_token, 'sha256'), 'hex');
-  select * into inv from public.exam_invitations where token_hash = h;
-  if not found then
+  inv := public.find_exam_invitation(p_token);
+  if inv.id is null then
     return jsonb_build_object('ok', false, 'error', 'This examination link is invalid.');
   end if;
   if inv.status <> 'unused' then
@@ -377,15 +408,13 @@ create or replace function public.save_exam_progress(p_token text, p_answers jso
 returns jsonb
 language plpgsql
 security definer
-set search_path = public
+set search_path = public, extensions, pg_temp
 as $$
 declare
-  h text;
   inv public.exam_invitations%rowtype;
 begin
-  h := encode(digest(p_token, 'sha256'), 'hex');
-  select * into inv from public.exam_invitations where token_hash = h;
-  if not found then
+  inv := public.find_exam_invitation(p_token);
+  if inv.id is null then
     return jsonb_build_object('ok', false, 'error', 'This examination link is invalid.');
   end if;
   update public.exam_attempts
@@ -403,10 +432,9 @@ create or replace function public.submit_exam_attempt(p_token text, p_answers js
 returns jsonb
 language plpgsql
 security definer
-set search_path = public
+set search_path = public, extensions, pg_temp
 as $$
 declare
-  h text;
   inv public.exam_invitations%rowtype;
   ex public.examinations%rowtype;
   att public.exam_attempts%rowtype;
@@ -418,9 +446,8 @@ declare
   earned numeric;
   passed boolean;
 begin
-  h := encode(digest(p_token, 'sha256'), 'hex');
-  select * into inv from public.exam_invitations where token_hash = h;
-  if not found then
+  inv := public.find_exam_invitation(p_token);
+  if inv.id is null then
     return jsonb_build_object('ok', false, 'error', 'This examination link is invalid.');
   end if;
   select * into att from public.exam_attempts where invitation_id = inv.id order by started_at desc limit 1;
@@ -483,15 +510,13 @@ create or replace function public.void_exam_attempt(p_token text, p_reason text)
 returns jsonb
 language plpgsql
 security definer
-set search_path = public
+set search_path = public, extensions, pg_temp
 as $$
 declare
-  h text;
   inv public.exam_invitations%rowtype;
 begin
-  h := encode(digest(p_token, 'sha256'), 'hex');
-  select * into inv from public.exam_invitations where token_hash = h;
-  if not found then
+  inv := public.find_exam_invitation(p_token);
+  if inv.id is null then
     return jsonb_build_object('ok', false, 'error', 'invalid');
   end if;
   update public.exam_attempts
@@ -503,6 +528,7 @@ begin
 end;
 $$;
 
+revoke all on function public.find_exam_invitation(text) from public;
 revoke all on function public.peek_exam_invitation(text) from public;
 revoke all on function public.start_exam_attempt(text) from public;
 revoke all on function public.save_exam_progress(text, jsonb, integer) from public;

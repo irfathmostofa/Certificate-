@@ -23,7 +23,10 @@ const WARNINGS = [
 function statusMessage(peek) {
   if (!peek?.ok) return 'This examination link is invalid or no longer available.'
   if (peek.status === 'revoked') return 'This examination invitation has been revoked.'
-  if (peek.status === 'used' || peek.attemptStatus) {
+  if (peek.status === 'used') {
+    return 'This examination link has already been used and is no longer available.'
+  }
+  if (peek.attemptStatus && peek.attemptStatus !== 'in_progress') {
     return 'This examination link has already been used and is no longer available.'
   }
   if (peek.exam && peek.exam.active === false) return 'This examination is not currently active.'
