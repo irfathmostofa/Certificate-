@@ -15,7 +15,8 @@ import {
   IconTemplate,
   IconSparkles,
   IconCheck,
-  IconUpload
+  IconUpload,
+  IconExam
 } from '../components/icons.jsx'
 
 function Stat({ icon, label, value, tone = '' }) {
@@ -124,6 +125,9 @@ export default function Dashboard() {
               <Link className="btn btn-ghost btn-block" to="/bulk">
                 <IconUpload /> Bulk generate
               </Link>
+              <Link className="btn btn-ghost btn-block" to="/examinations">
+                <IconExam /> Examinations
+              </Link>
               <Link className="btn btn-ghost btn-block" to="/templates">
                 <IconTemplate /> Browse templates
               </Link>
@@ -135,7 +139,7 @@ export default function Dashboard() {
             <ol className="muted small dash-steps">
               <li>Set your organization & signature in Organization.</li>
               <li>Pick a design template or customize your own.</li>
-              <li>Fill recipient details and generate.</li>
+              <li>Fill recipient details and generate, or send after a passed exam.</li>
               <li>Export to PDF, PNG or JPEG in high resolution.</li>
             </ol>
           </div>

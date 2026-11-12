@@ -24,6 +24,9 @@ Admins can pick from professional certificate templates, customize their design,
   a typed script signature is used as a fallback.
 - **Exports** — high-resolution **PDF**, **PNG** and **JPEG** generated in the browser.
 - **Certificate library** — search, preview, re-export and delete issued certificates.
+- **Examinations** — course-wise MCQ exams with pass marks, duration, optional negative
+  marking, manual questions or Excel/CSV import, one-time secure invitation links, and
+  a locked student exam UI. Passing students can be sent a course certificate.
 - **Public verification** — every issued certificate gets an unguessable share link
   (`/view/<token>`) that anyone can open, no login required, to view and verify it.
 - **Demo mode** — runs entirely in the browser (localStorage) when Supabase is not configured,
@@ -67,7 +70,8 @@ least 4 characters) to explore the app.
    `settings`, `templates` and `certificates` tables, row-level security policies, and the
    `certify-assets` storage bucket for logos and signatures.
    If the database already exists, run `supabase/migrations/20261023_add_recipient_email.sql`
-   to add student email support.
+   to add student email support, and `supabase/migrations/20261112_examinations.sql`
+   for the examinations module.
 5. Create an admin user in **Authentication → Users** and sign in with it.
 
 > The anon key is safe to expose in the frontend. All tables are protected by row-level
@@ -78,6 +82,9 @@ least 4 characters) to explore the app.
 - `settings` — single row (`id = 1`) holding organization info, signature and default design.
 - `templates` — custom templates created in the app (built-in presets ship with the code).
 - `certificates` — every issued certificate, with an optional per-certificate design override.
+- `examinations` — course exams, MCQ banks and scoring rules.
+- `exam_invitations` — hashed, single-use student exam links.
+- `exam_attempts` — timed attempts, answers, pass/fail and certificate-sent status.
 
 ## Project structure
 
@@ -90,7 +97,7 @@ src/
     ui.jsx, icons.jsx   # shared UI primitives
   context/              # AuthContext, DataContext
   lib/                  # supabase client, data layer, templates, tutorLms, export helpers
-  pages/                # Login, Dashboard, Templates, Generate, BulkGenerate, Certificates, Settings
+  pages/                # Login, Dashboard, Templates, Generate, BulkGenerate, Examinations, Certificates, Settings
   styles/global.css     # admin UI theme
 supabase/schema.sql     # database schema + policies
 ```

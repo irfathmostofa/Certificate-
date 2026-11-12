@@ -11,7 +11,8 @@ import {
   IconSettings,
   IconLogout,
   IconDots,
-  IconClose
+  IconClose,
+  IconExam
 } from './icons.jsx'
 
 const NAV = [
@@ -19,6 +20,7 @@ const NAV = [
   { to: '/templates', label: 'Templates', icon: IconTemplate },
   { to: '/generate', label: 'Generate', icon: IconSparkles },
   { to: '/bulk', label: 'Bulk Generate', icon: IconUpload },
+  { to: '/examinations', label: 'Examinations', icon: IconExam },
   { to: '/certificates', label: 'Certificates', icon: IconCertificate },
   { to: '/settings', label: 'Organization', icon: IconSettings }
 ]
@@ -28,6 +30,7 @@ const TITLES = {
   '/templates': ['Design Templates', 'Choose and customize professional certificate designs'],
   '/generate': ['Generate Certificate', 'Create a single certificate for one recipient'],
   '/bulk': ['Bulk Generation', 'Add recipients from manual entry, CSV, or Tutor LMS'],
+  '/examinations': ['Examinations', 'Course-wise MCQ exams, invitations and pass eligibility'],
   '/certificates': ['Certificates', 'Search, preview and export issued certificates'],
   '/settings': ['Organization', 'Brand, signature, student API and EmailJS']
 }
@@ -36,7 +39,9 @@ export default function Layout({ children }) {
   const { user, signOut } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
-  const [title, subtitle] = TITLES[location.pathname] || ['Certify Studio', '']
+  const [title, subtitle] = location.pathname.startsWith('/examinations/')
+    ? ['Examination', 'Configure the exam, questions, invitations and results']
+    : TITLES[location.pathname] || ['Certify Studio', '']
   const [menuOpen, setMenuOpen] = useState(false)
 
   // Close the mobile drawer whenever the route changes.

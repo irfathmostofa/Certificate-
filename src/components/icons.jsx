@@ -183,3 +183,30 @@ export const IconBuilding = (p) => (
     <path d="M9 21v-4h4v4M8 8h2M12 8h2M8 12h2M12 12h2" />
   </svg>
 )
+
+export const IconExam = (p) => (
+  <svg {...base} {...p}>
+    <path d="M8 3h8a2 2 0 012 2v14a2 2 0 01-2 2H8a2 2 0 01-2-2V5a2 2 0 012-2z" />
+    <path d="M10 8h4M10 12h4M10 16h2" />
+  </svg>
+)
+
+export const IconClock = (p) => (
+  <svg {...base} {...p}>
+    <circle cx="12" cy="12" r="8" />
+    <path d="M12 8v4l2.5 2.5" />
+  </svg>
+)
+
+export const IconSend = (p) => (
+  <svg {...base} {...p}>
+    <path d="M4 12l16-8-8 16-1.5-6.5z" />
+  </svg>
+)
+
+export const IconAlert = (p) => (
+  <svg {...base} {...p}>
+    <path d="M10.3 4.3L2.8 17a2 2 0 001.7 3h15a2 2 0 001.7-3L13.7 4.3a2 2 0 00-3.4 0z" />
+    <path d="M12 9v4M12 17h.01" />
+  </svg>
+)

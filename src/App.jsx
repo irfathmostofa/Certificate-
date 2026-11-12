@@ -12,6 +12,9 @@ import Students from './pages/Students.jsx'
 import Certificates from './pages/Certificates.jsx'
 import Settings from './pages/Settings.jsx'
 import PublicCertificate from './pages/PublicCertificate.jsx'
+import Examinations from './pages/Examinations.jsx'
+import ExaminationEditor from './pages/ExaminationEditor.jsx'
+import TakeExam from './pages/TakeExam.jsx'
 
 function RequireAuth({ children }) {
   const { user, loading } = useAuth()
@@ -38,6 +41,7 @@ export default function App() {
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/view/:token" element={<PublicCertificate />} />
+          <Route path="/exam/:token" element={<TakeExam />} />
           <Route
             path="/"
             element={
@@ -94,6 +98,26 @@ export default function App() {
               <RequireAuth>
                 <Shell>
                   <Certificates />
+                </Shell>
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/examinations"
+            element={
+              <RequireAuth>
+                <Shell>
+                  <Examinations />
+                </Shell>
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/examinations/:id"
+            element={
+              <RequireAuth>
+                <Shell>
+                  <ExaminationEditor />
                 </Shell>
               </RequireAuth>
             }
