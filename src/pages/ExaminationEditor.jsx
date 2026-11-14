@@ -15,7 +15,6 @@ import {
 import {
   blankExam,
   blankQuestion,
-  cachedStudents,
   collectCourseOptions,
   createInvitation,
   getExamination,
@@ -30,6 +29,7 @@ import { downloadQuestionTemplate, optionLabel, parseQuestionFile } from '../lib
 import { makeCertificateId, makePublicToken, todayLong } from '../lib/data.js'
 import { buildPublicUrl, formatDate } from '../lib/certUtils.js'
 import { isEmailjsConfigured, isValidEmail, sendCertificateEmail } from '../lib/emailjs.js'
+import { fetchTutorStudents, readCachedStudents, writeCachedStudents } from '../lib/tutorLms.js'
 import { uid } from '../lib/storage.js'
 
 const TABS = [
@@ -40,6 +40,20 @@ const TABS = [
 
 function optionIdAt(index) {
   return String.fromCharCode(97 + index)
+}
+
+function sameStudent(a, b) {
+  const emailA = String(a.email || a.studentEmail || '').trim().toLowerCase()
+  const emailB = String(b.email || b.studentEmail || '').trim().toLowerCase()
+  if (emailA && emailB) return emailA === emailB
+
+  const nameA = String(a.name || a.studentName || '').trim().toLowerCase()
+  const nameB = String(b.name || b.studentName || '').trim().toLowerCase()
+  if (nameA && nameB) return nameA === nameB
+
+  const idA = String(a.id || a.studentId || '').trim().toLowerCase()
+  const idB = String(b.id || b.studentId || '').trim().toLowerCase()
+  return Boolean(idA && idB && idA === idB)
 }
 
 function QuestionEditor({ question, marksPerQuestion, onChange, onRemove }) {
@@ -146,6 +160,7 @@ export default function ExaminationEditor() {
   const [msg, setMsg] = useState(null)
   const [invitations, setInvitations] = useState([])
   const [attempts, setAttempts] = useState([])
+  const [lmsStudentCache, setLmsStudentCache] = useState({ students: [], fetchedAt: null })
   const [inviteForm, setInviteForm] = useState({ studentName: '', studentEmail: '', studentId: '' })
   const [generatedLink, setGeneratedLink] = useState(null)
   const [regeneratingId, setRegeneratingId] = useState('')
@@ -155,28 +170,61 @@ export default function ExaminationEditor() {
   const [sendTarget, setSendTarget] = useState(null)
   const [sending, setSending] = useState(false)
 
+  const integration = settings?.integration
+  useEffect(() => {
+    if (!integration?.enabled || !integration?.baseUrl) {
+      setLmsStudentCache({ students: [], fetchedAt: null })
+      return
+    }
+
+    let active = true
+    const cached = readCachedStudents(integration)
+    if (cached) {
+      setLmsStudentCache({ students: cached.students, fetchedAt: cached.fetchedAt || null })
+    }
+
+    fetchTutorStudents(integration)
+      .then((result) => {
+        const fetchedAt = new Date().toISOString()
+        writeCachedStudents(integration, { ...result, fetchedAt })
+        if (active) {
+          setLmsStudentCache({
+            students: result.students,
+            fetchedAt
+          })
+        }
+      })
+      .catch((e) => {
+        if (active) setMsg({ type: 'error', text: e.message || 'Could not load Tutor LMS students.' })
+      })
+    return () => {
+      active = false
+    }
+  }, [integration])
+
   const courses = useMemo(
     () => collectCourseOptions(certificates, exam.courseTitle ? [exam.courseTitle] : []),
     [certificates, exam.courseTitle]
   )
   const students = useMemo(() => {
-    const fromLms = cachedStudents()
     const fromCerts = certificates.map((cert) => ({
       id: cert.id,
       name: cert.recipientName,
       email: cert.recipientEmail || '',
       course: cert.courseTitle
     }))
-    const all = [...fromLms, ...fromCerts]
-    const seen = new Set()
-    return all.filter((student) => {
-      const key = `${String(student.name || '').toLowerCase()}|${String(student.email || '').toLowerCase()}`
-      if (!student.name || seen.has(key)) return false
-      seen.add(key)
-      if (!exam.courseTitle) return true
-      return !student.course || student.course === exam.courseTitle
-    })
-  }, [exam.courseTitle, certificates])
+    const all = [...lmsStudentCache.students, ...fromCerts]
+    return all.reduce((unique, student) => {
+      if (student.name && !unique.some((item) => sameStudent(item, student))) unique.push(student)
+      return unique
+    }, [])
+  }, [certificates, lmsStudentCache.students])
+  const uniqueInvitations = useMemo(() => {
+    return invitations.reduce((unique, invitation) => {
+      if (!unique.some((item) => sameStudent(item, invitation))) unique.push(invitation)
+      return unique
+    }, [])
+  }, [invitations])
 
   const loadRelated = async (examId) => {
     const [inv, att] = await Promise.all([listInvitations(examId), listAttempts(examId)])
@@ -273,6 +321,10 @@ export default function ExaminationEditor() {
   }
 
   const createLink = async (student) => {
+    if (invitations.some((invitation) => sameStudent(invitation, student))) {
+      setMsg({ type: 'error', text: 'An invitation already exists for this student.' })
+      return
+    }
     if (isNew) {
       setMsg({ type: 'error', text: 'Save the examination first, then generate a link.' })
       setTab('settings')
@@ -592,7 +644,7 @@ export default function ExaminationEditor() {
                   value={inviteForm.studentName}
                   onChange={(e) => {
                     const name = e.target.value
-                    const match = students.find((s) => s.name === name)
+                    const match = students.find((s) => s.name.toLowerCase() === name.trim().toLowerCase())
                     setInviteForm({
                       studentName: name,
                       studentEmail: match?.email || inviteForm.studentEmail,
@@ -637,7 +689,7 @@ export default function ExaminationEditor() {
             <div className="card-pad">
               <h3 style={{ margin: 0 }}>Invitations</h3>
             </div>
-            {invitations.length === 0 ? (
+            {uniqueInvitations.length === 0 ? (
               <EmptyState title="No invitations yet">Generate a link after the student applies for the exam.</EmptyState>
             ) : (
               <div className="table-scroll">
@@ -651,7 +703,7 @@ export default function ExaminationEditor() {
                     </tr>
                   </thead>
                   <tbody>
-                    {invitations.map((item) => (
+                    {uniqueInvitations.map((item) => (
                       <tr key={item.id}>
                         <td>
                           <div style={{ fontWeight: 600 }}>{item.studentName}</div>
