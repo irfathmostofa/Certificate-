@@ -154,6 +154,7 @@ export default function ExaminationEditor() {
   const { certificates, templates, settings, addCertificates, findTemplate } = useData()
   const isNew = id === 'new'
   const [tab, setTab] = useState('settings')
+  const [participantTab, setParticipantTab] = useState('links')
   const [exam, setExam] = useState(() => blankExam())
   const [loading, setLoading] = useState(!isNew)
   const [saving, setSaving] = useState(false)
@@ -630,6 +631,23 @@ export default function ExaminationEditor() {
 
       {tab === 'participants' && (
         <div className="grid" style={{ gap: 16 }}>
+          <div className="tabs">
+            <button
+              className={`tab${participantTab === 'links' ? ' active' : ''}`}
+              onClick={() => setParticipantTab('links')}
+              type="button"
+            >
+              Generate link
+            </button>
+            <button
+              className={`tab${participantTab === 'results' ? ' active' : ''}`}
+              onClick={() => setParticipantTab('results')}
+              type="button"
+            >
+              Results
+            </button>
+          </div>
+          {participantTab === 'links' && <>
           <div className="card card-pad">
             <h3 style={{ marginTop: 0 }}>Create a one-time exam link</h3>
             <p className="muted small" style={{ marginTop: 0 }}>
@@ -739,7 +757,9 @@ export default function ExaminationEditor() {
               </div>
             )}
           </div>
+          </>}
 
+          {participantTab === 'results' && (
           <div className="card">
             <div className="card-pad">
               <h3 style={{ margin: 0 }}>Participant results</h3>
@@ -801,6 +821,7 @@ export default function ExaminationEditor() {
               </div>
             )}
           </div>
+          )}
         </div>
       )}
 
